@@ -1,56 +1,44 @@
-import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor,
-  HttpErrorResponse
-} from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { AuthService } from '../services/auth.service';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Get the auth token from the service
-    const token = this.authService.getToken();
+  // Get the auth token from the service
+  const token = authService.getToken();
 
-    // Clone the request and add the authorization header
-    let authReq = request;
-    if (token) {
-      authReq = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    }
-
-    // Handle the request and catch any errors
-    return next.handle(authReq).pipe(
-      catchError((error: HttpErrorResponse) => {
-        // If we get a 401 Unauthorized, redirect to login
-        if (error.status === 401) {
-          this.authService.logout();
-          this.router.navigate(['/login'], {
-            queryParams: { returnUrl: this.router.url }
-          });
-        }
-
-        // Handle 403 Forbidden
-        if (error.status === 403) {
-          // Could show a toast notification here
-          console.error('You do not have permission to perform this action.');
-        }
-
-        return throwError(() => error);
-      })
-    );
+  // Clone the request and add the authorization header
+  let authReq = req;
+  if (token) {
+    authReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
   }
-}
+
+  // Handle the request and catch any errors
+  return next(authReq).pipe(
+    catchError((error) => {
+      // If we get a 401 Unauthorized, redirect to login
+      if (error.status === 401) {
+        authService.logout();
+        router.navigate(['/login'], {
+          queryParams: { returnUrl: router.url }
+        });
+      }
+
+      // Handle 403 Forbidden
+      if (error.status === 403) {
+        console.error('You do not have permission to perform this action.');
+      }
+
+      return throwError(() => error);
+    })
+  );
+};
