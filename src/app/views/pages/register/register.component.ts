@@ -13,8 +13,7 @@ import {
   InputGroupComponent,
   InputGroupTextDirective,
   RowComponent,
-  AlertComponent,
-  SpinnerComponent
+  AlertComponent
 } from '@coreui/angular';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -37,8 +36,7 @@ import { CommonModule } from '@angular/common';
     FormControlDirective,
     ButtonDirective,
     RouterLink,
-    AlertComponent,
-    SpinnerComponent
+    AlertComponent
   ]
 })
 export class RegisterComponent {
@@ -102,6 +100,10 @@ export class RegisterComponent {
           }, 3000);
         } else {
           this.errorMessage = response.message || 'Registration failed. Please try again.';
+          // Show specific error messages from server
+          if (response.errors && response.errors.length > 0) {
+            this.errorMessage = response.errors.join(', ');
+          }
         }
       },
       error: (error) => {

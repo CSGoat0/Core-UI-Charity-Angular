@@ -29,8 +29,10 @@
                   formControlName="fullName"
                   placeholder="Full Name"
                   autoComplete="name"
-                  [valid]="fullName?.valid"
-                  [invalid]="fullName?.invalid && fullName?.touched"
+                  [ngClass]="{
+                    'is-invalid': fullName?.invalid && fullName?.touched,
+                    'is-valid': fullName?.valid && fullName?.touched
+                  }"
                 />
               </c-input-group>
               <div *ngIf="fullName?.invalid && fullName?.touched" class="invalid-feedback d-block mb-2">
@@ -49,8 +51,10 @@
                   formControlName="userName"
                   placeholder="Username"
                   autoComplete="username"
-                  [valid]="userName?.valid"
-                  [invalid]="userName?.invalid && userName?.touched"
+                  [ngClass]="{
+                    'is-invalid': userName?.invalid && userName?.touched,
+                    'is-valid': userName?.valid && userName?.touched
+                  }"
                 />
               </c-input-group>
               <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback d-block mb-2">
@@ -67,8 +71,10 @@
                   formControlName="email"
                   placeholder="Email"
                   autoComplete="email"
-                  [valid]="email?.valid"
-                  [invalid]="email?.invalid && email?.touched"
+                  [ngClass]="{
+                    'is-invalid': email?.invalid && email?.touched,
+                    'is-valid': email?.valid && email?.touched
+                  }"
                 />
               </c-input-group>
               <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback d-block mb-2">
@@ -101,8 +107,10 @@
                   formControlName="password"
                   placeholder="Password"
                   autoComplete="new-password"
-                  [valid]="password?.valid"
-                  [invalid]="password?.invalid && password?.touched"
+                  [ngClass]="{
+                    'is-invalid': password?.invalid && password?.touched,
+                    'is-valid': password?.valid && password?.touched
+                  }"
                 />
               </c-input-group>
               <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback d-block mb-2">
@@ -121,12 +129,15 @@
                   formControlName="confirmPassword"
                   placeholder="Confirm Password"
                   autoComplete="new-password"
-                  [valid]="confirmPassword?.valid"
-                  [invalid]="confirmPassword?.invalid && confirmPassword?.touched"
+                  [ngClass]="{
+                    'is-invalid': (confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch'],
+                    'is-valid': confirmPassword?.valid && confirmPassword?.touched
+                  }"
                 />
               </c-input-group>
-              <div *ngIf="registerForm.errors?.['passwordMismatch'] && confirmPassword?.touched" class="invalid-feedback d-block mb-2">
-                Passwords do not match
+              <div *ngIf="(confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch']" class="invalid-feedback d-block mb-2">
+                <span *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</span>
+                <span *ngIf="registerForm.errors?.['passwordMismatch']">Passwords do not match</span>
               </div>
 
               <div class="d-grid">

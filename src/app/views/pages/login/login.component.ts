@@ -14,8 +14,7 @@ import {
   InputGroupComponent,
   InputGroupTextDirective,
   RowComponent,
-  AlertComponent,
-  SpinnerComponent
+  AlertComponent
 } from '@coreui/angular';
 import { AuthService } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -39,8 +38,7 @@ import { CommonModule } from '@angular/common';
     FormControlDirective,
     ButtonDirective,
     RouterLink,
-    AlertComponent,
-    SpinnerComponent
+    AlertComponent
   ]
 })
 export class LoginComponent implements OnInit {
