@@ -1,4 +1,3 @@
-<!--<c-header class="mb-4 d-print-none" position="sticky">-->
 <ng-container>
   <c-container [fluid]="true" class="border-bottom px-4">
     <button
@@ -54,24 +53,26 @@
     <c-breadcrumb-router />
   </c-container>
 </ng-container>
-<!--</c-header>-->
 
+<!-- User Dropdown -->
 <ng-template #userDropdown>
   <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
     <button [caret]="false" cDropdownToggle class="py-0 pe-0" aria-label="Open user menu">
       <c-avatar
         shape="rounded-1"
         size="md"
-        src="./assets/images/avatars/8.jpg"
+        color="primary"
         status="success"
-        textColor="primary"
+        textColor="white"
         alt="User avatar"
-      />
+      >
+        {{ getUserInitials() }}
+      </c-avatar>
     </button>
     <ul cDropdownMenu class="pt-0 w-auto">
       <li>
         <h6 cDropdownHeader class="bg-body-secondary text-body-secondary fw-semibold py-2 rounded-top">
-          Account
+          {{ getUserDisplayName() }}
         </h6>
       </li>
       <li>
@@ -109,15 +110,14 @@
           Settings
         </h6>
       </li>
-      <li></li>
       <li>
-        <a cDropdownItem routerLink="">
+        <a cDropdownItem routerLink="/profile">
           <svg cIcon class="me-2" name="cilUser"></svg>
           Profile
         </a>
       </li>
       <li>
-        <a cDropdownItem routerLink="">
+        <a cDropdownItem routerLink="/settings">
           <svg cIcon class="me-2" name="cilSettings"></svg>
           Settings
         </a>
@@ -144,13 +144,7 @@
         <hr cDropdownDivider />
       </li>
       <li>
-        <a cDropdownItem routerLink="">
-          <svg cIcon class="me-2" name="cilLockLocked"></svg>
-          Lock Account
-        </a>
-      </li>
-      <li>
-        <a cDropdownItem routerLink="">
+        <a cDropdownItem (click)="logout()" style="cursor: pointer;">
           <svg cIcon class="me-2" name="cilAccountLogout"></svg>
           Logout
         </a>
@@ -159,6 +153,7 @@
   </c-dropdown>
 </ng-template>
 
+<!-- Theme Dropdown -->
 <ng-template #themeDropdown>
   <c-dropdown alignment="end" variant="nav-item">
     <button [caret]="false" cDropdownToggle aria-label="Open theme picker">
