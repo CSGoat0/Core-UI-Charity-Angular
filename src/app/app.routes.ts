@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -12,6 +14,7 @@ export const routes: Routes = [
     data: {
       title: 'Home'
     },
+    canActivate: [AuthGuard], // Protect all child routes
     children: [
       {
         path: 'dashboard',
@@ -56,20 +59,6 @@ export const routes: Routes = [
     ]
   },
   {
-    path: '404',
-    loadComponent: () => import('./views/pages/page404/page404.component').then(m => m.Page404Component),
-    data: {
-      title: 'Page 404'
-    }
-  },
-  {
-    path: '500',
-    loadComponent: () => import('./views/pages/page500/page500.component').then(m => m.Page500Component),
-    data: {
-      title: 'Page 500'
-    }
-  },
-  {
     path: 'login',
     loadComponent: () => import('./views/pages/login/login.component').then(m => m.LoginComponent),
     data: {
@@ -83,5 +72,51 @@ export const routes: Routes = [
       title: 'Register Page'
     }
   },
+  {
+    path: '404',
+    loadComponent: () => import('./views/pages/page404/page404.component').then(m => m.Page404Component),
+    data: {
+      title: 'Page 404'
+    }
+  },
+  {
+    path: '500',
+    loadComponent: () => import('./views/pages/page500/page500.component').then(m => m.Page500Component),
+    data: {
+      title: 'Page 500'
+    }
+  },
+  // ==============================
+  // ADMIN & SUPER ADMIN ROUTES (Commented - Will be implemented later)
+  // ==============================
+
+  // Protected Admin routes with role guard
+  // Uncomment when admin component is created
+  /*
+  {
+    path: 'admin',
+    loadComponent: () => import('./views/admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      roles: ['Admin', 'SuperAdmin'],
+      title: 'Admin'
+    }
+  },
+  */
+
+  // Protected SuperAdmin routes with role guard
+  // Uncomment when super-admin component is created
+  /*
+  {
+    path: 'super-admin',
+    loadComponent: () => import('./views/super-admin/super-admin.component').then(m => m.SuperAdminComponent),
+    canActivate: [AuthGuard, RoleGuard],
+    data: {
+      roles: ['SuperAdmin'],
+      title: 'Super Admin'
+    }
+  },
+  */
+
   { path: '**', redirectTo: 'dashboard' }
 ];

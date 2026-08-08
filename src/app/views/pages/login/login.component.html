@@ -5,34 +5,73 @@
         <c-card-group>
           <c-card class="p-4">
             <c-card-body>
-              <form cForm>
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" cForm>
                 <h1>Login</h1>
                 <p class="text-body-secondary">Sign In to your account</p>
+
+                <!-- Error Alert -->
+                <c-alert *ngIf="errorMessage" color="danger" dismissible>
+                  {{ errorMessage }}
+                </c-alert>
+
+                <!-- Username Field -->
                 <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cilUser"></svg>
                   </span>
-                  <input autoComplete="username" cFormControl placeholder="Username" />
+                  <input
+                    type="text"
+                    cFormControl
+                    formControlName="userName"
+                    placeholder="Username or Email"
+                    autoComplete="username"
+                    [ngClass]="{
+                      'is-invalid': userName?.invalid && userName?.touched,
+                      'is-valid': userName?.valid && userName?.touched
+                    }"
+                  />
                 </c-input-group>
+                <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback d-block mb-2">
+                  <span *ngIf="userName?.errors?.['required']">Username is required</span>
+                </div>
+
+                <!-- Password Field -->
                 <c-input-group class="mb-4">
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
                   <input
-                    autoComplete="current-password"
-                    cFormControl
-                    placeholder="Password"
                     type="password"
+                    cFormControl
+                    formControlName="password"
+                    placeholder="Password"
+                    autoComplete="current-password"
+                    [ngClass]="{
+                      'is-invalid': password?.invalid && password?.touched,
+                      'is-valid': password?.valid && password?.touched
+                    }"
                   />
                 </c-input-group>
+                <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback d-block mb-2">
+                  <span *ngIf="password?.errors?.['required']">Password is required</span>
+                  <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+                </div>
+
                 <c-row>
                   <c-col xs="6">
-                    <button cButton class="px-4" color="primary">
-                      Login
+                    <button
+                      cButton
+                      class="px-4"
+                      color="primary"
+                      type="submit"
+                      [disabled]="isLoading || loginForm.invalid"
+                    >
+                      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ isLoading ? 'Logging in...' : 'Login' }}
                     </button>
                   </c-col>
                   <c-col class="text-end" xs="6">
-                    <button cButton class="px-0" color="link">
+                    <button cButton class="px-0" color="link" routerLink="/forgot-password">
                       Forgot password?
                     </button>
                   </c-col>
@@ -45,10 +84,16 @@
               <div>
                 <h2>Sign up</h2>
                 <p>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                  tempor incididunt ut labore et dolore magna aliqua.
+                  Create your account and start using our platform today.
+                  Join our community and access all features.
                 </p>
-                <button [active]="true" cButton class="mt-3" color="primary" routerLink="/register">
+                <button
+                  [active]="true"
+                  cButton
+                  class="mt-3"
+                  color="primary"
+                  routerLink="/register"
+                >
                   Register Now!
                 </button>
               </div>

@@ -28,5 +28,38 @@ export const routes: Routes = [
     data: {
       title: 'Register Page'
     }
-  }
+  },
+  // ==============================
+  // FORGOT & RESET PASSWORD ROUTES (Commented - Will be implemented later)
+  // ==============================
+  // Uncomment when forgot-password component is created
+  /*
+  {
+    path: 'forgot-password',
+    loadComponent: () => import('./forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+    data: {
+      title: 'Forgot Password'
+    }
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
+    data: {
+      title: 'Reset Password'
+    }
+  },
+  */
+  // ==============================
+  // EXTERNAL LOGIN CALLBACK ROUTE (Commented - Will be implemented later)
+  // ==============================
+  // Uncomment when external-login-callback component is created
+  /*
+  {
+    path: 'external-login-callback',
+    loadComponent: () => import('./external-login-callback/external-login-callback.component').then(m => m.ExternalLoginCallbackComponent),
+    data: {
+      title: 'External Login Callback'
+    }
+  },
+  */
 ];
