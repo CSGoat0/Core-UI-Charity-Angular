@@ -72,7 +72,6 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      // Mark all fields as touched to trigger validation messages
       Object.keys(this.loginForm.controls).forEach(key => {
         this.loginForm.get(key)?.markAsTouched();
       });
@@ -86,7 +85,8 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.isLoading = false;
         if (response.success) {
-          // Redirect to the return URL or dashboard
+          // User data is already stored in AuthService
+          // Just redirect to the return URL
           this.router.navigateByUrl(this.returnUrl);
         } else {
           this.errorMessage = response.message || 'Login failed. Please try again.';
