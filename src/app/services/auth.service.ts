@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
-// Import models
 import {
   LoginRequest,
   RegisterRequest,
@@ -24,7 +23,6 @@ export class AuthService {
   private tokenKey = environment.auth.tokenKey;
   private userKey = environment.auth.userKey;
 
-  // BehaviorSubject to track authentication state
   private currentUserSubject = new BehaviorSubject<UserDto | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -35,7 +33,6 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    // Check if user is already logged in on app initialization
     this.loadStoredUser();
   }
 
@@ -53,7 +50,17 @@ export class AuthService {
     ).pipe(
       tap(response => {
         if (response.success && response.data) {
-          this.handleSuccessfulLogin(response.data.token);
+          // Store the token
+          localStorage.setItem(this.tokenKey, response.data.token);
+
+          // Store the user data if available
+          if (response.data.user) {
+            this.currentUserSubject.next(response.data.user);
+            localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
+            console.log('User data stored from login response:', response.data.user);
+          }
+
+          this.isAuthenticatedSubject.next(true);
         }
       }),
       catchError(this.handleError)
@@ -201,7 +208,6 @@ export class AuthService {
    * Handle external login callback
    */
   handleExternalLoginCallback(): Observable<ServiceResponse<LoginResponse>> {
-    // Parse the return URL from query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const returnUrl = urlParams.get('returnUrl') || '/';
     const remoteError = urlParams.get('remoteError');
@@ -210,8 +216,6 @@ export class AuthService {
       return throwError(() => new Error(`External login error: ${remoteError}`));
     }
 
-    // The backend will handle the external login and return the token
-    // The token is returned in the response data
     return this.http.get<ServiceResponse<LoginResponse>>(
       `${this.apiUrl}/ExternalLogin/external-login-callback`,
       {
@@ -222,8 +226,14 @@ export class AuthService {
     ).pipe(
       tap(response => {
         if (response.success && response.data) {
-          this.handleSuccessfulLogin(response.data.token);
-          // Redirect to return URL after successful login
+          localStorage.setItem(this.tokenKey, response.data.token);
+
+          if (response.data.user) {
+            this.currentUserSubject.next(response.data.user);
+            localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
+          }
+
+          this.isAuthenticatedSubject.next(true);
           this.router.navigateByUrl(returnUrl);
         }
       }),
@@ -298,17 +308,9 @@ export class AuthService {
   // Private Helper Methods
   // ==============================
 
-  private handleSuccessfulLogin(token: string): void {
-    // Store token
-    localStorage.setItem(this.tokenKey, token);
-
-    // Load user data from token or fetch from API
-    this.loadUserData();
-
-    // Update authentication state
-    this.isAuthenticatedSubject.next(true);
-  }
-
+  /**
+   * Load stored user on app initialization
+   */
   private loadStoredUser(): void {
     const user = this.getUser();
     const token = this.getToken();
@@ -316,34 +318,10 @@ export class AuthService {
     if (user && token) {
       this.currentUserSubject.next(user);
       this.isAuthenticatedSubject.next(true);
+      console.log('User restored from storage:', user);
     } else {
       this.currentUserSubject.next(null);
       this.isAuthenticatedSubject.next(false);
-    }
-  }
-
-  private loadUserData(): void {
-    // If we have a token but no user data, fetch it
-    if (this.getToken() && !this.getUser()) {
-      this.getCurrentUser().subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            this.currentUserSubject.next(response.data);
-            localStorage.setItem(this.userKey, JSON.stringify(response.data));
-          }
-        },
-        error: (error) => {
-          console.error('Failed to load user data:', error);
-          // If we can't load user data, logout
-          this.logout();
-        }
-      });
-    } else {
-      // Use stored user data
-      const user = this.getUser();
-      if (user) {
-        this.currentUserSubject.next(user);
-      }
     }
   }
 
@@ -351,10 +329,8 @@ export class AuthService {
     let errorMessage = 'An error occurred';
 
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = error.error.message;
     } else {
-      // Server-side error
       if (error.error && error.error.message) {
         errorMessage = error.error.message;
       } else if (error.status) {
