@@ -39,6 +39,7 @@ export interface ServiceResponse<T> {
 
 export interface LoginResponse {
   token: string;
+  user: UserDto;
   returnUrl?: string;
 }
 
