@@ -178,6 +178,8 @@ export class LoginComponent implements OnInit {
     });
   }
 
+
+  // Convenience getters for form controls
   get userName() { return this.loginForm.get('userName'); }
   get password() { return this.loginForm.get('password'); }
 }
