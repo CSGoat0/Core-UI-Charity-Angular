@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { IconDirective } from '@coreui/icons-angular';
@@ -57,7 +57,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {
     this.resetForm = this.fb.group({
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -68,14 +69,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Get email and token from query parameters
     this.route.queryParams.subscribe(params => {
       this.email = params['email'] || '';
       this.token = params['encodedToken'] || '';
 
-      console.log('Reset Password Component initialized with email:', this.email, 'and token:', this.token);
-
-      // If missing required parameters, redirect to login for security.
       if (!this.email || !this.token) {
         this.router.navigate(['/login']);
       }
@@ -83,14 +80,12 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clean up timeout if component is destroyed
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
   }
 
-  // Custom validator to check if passwords match
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
@@ -103,34 +98,29 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    // Check if form is valid
     if (this.resetForm.invalid) {
       Object.keys(this.resetForm.controls).forEach(key => {
         this.resetForm.get(key)?.markAsTouched();
       });
+      this.cdr.detectChanges();
       return;
     }
 
-    // Check if we have email and token
     if (!this.email || !this.token) {
-      this.errorMessage = 'Invalid reset link. Please request a new password reset.';
+      this.router.navigate(['/login']);
       return;
     }
 
-    // Set loading state
     this.isLoading = true;
     this.errorMessage = null;
     this.successMessage = null;
     this.isSubmitted = false;
+    this.cdr.detectChanges();
 
-    // Disable the entire form while loading
-    this.resetForm.disable();
-
-    // Safety timeout - stop loading after 15 seconds
     this.timeoutId = setTimeout(() => {
       if (this.isLoading) {
         this.isLoading = false;
-        this.resetForm.enable();
+        this.cdr.detectChanges();
         this.errorMessage = 'Request timed out. Please try again.';
         console.warn('Reset password request timed out');
       }
@@ -144,52 +134,47 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
     this.authService.resetPassword(resetData).subscribe({
       next: (response) => {
-        // Clear timeout
         if (this.timeoutId) {
           clearTimeout(this.timeoutId);
           this.timeoutId = null;
         }
 
-        // Reset loading state and re-enable controls
         this.isLoading = false;
-        this.resetForm.enable();
+        this.cdr.detectChanges();
 
         if (response.success) {
           this.isSubmitted = true;
           this.successMessage = 'Your password has been reset successfully!';
 
-          // Auto redirect to login after 3 seconds
           setTimeout(() => {
             this.router.navigate(['/login']);
           }, 3000);
         } else {
           this.errorMessage = response.message || 'Failed to reset password. Please try again.';
         }
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        // Clear timeout
         if (this.timeoutId) {
           clearTimeout(this.timeoutId);
           this.timeoutId = null;
         }
 
-        // Reset loading state and re-enable controls
         this.isLoading = false;
-        this.resetForm.enable();
-
+        this.cdr.detectChanges();
         this.errorMessage = error.message || 'An error occurred. Please try again.';
         console.error('Reset password error:', error);
+        this.cdr.detectChanges();
       }
     });
   }
 
-  // Reset the form to try again
   resetFormState(): void {
     this.isSubmitted = false;
     this.successMessage = null;
     this.errorMessage = null;
     this.resetForm.reset();
-    this.resetForm.enable();
+    this.cdr.detectChanges();
   }
 
   // Navigate back to forgot password

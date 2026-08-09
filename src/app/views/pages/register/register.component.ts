@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IconDirective } from '@coreui/icons-angular';
@@ -48,7 +48,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -79,24 +80,22 @@ export class RegisterComponent {
       Object.keys(this.registerForm.controls).forEach(key => {
         this.registerForm.get(key)?.markAsTouched();
       });
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = null;
     this.successMessage = null;
-
-    // Disable the entire form while loading
-    this.registerForm.disable();
+    this.cdr.detectChanges();
 
     // Remove confirmPassword from the request payload
     const { confirmPassword, ...registrationData } = this.registerForm.value;
 
     this.authService.register(registrationData).subscribe({
       next: (response) => {
-        // Re-enable the form
-        this.registerForm.enable();
         this.isLoading = false;
+        this.cdr.detectChanges();
 
         if (response.success) {
           this.successMessage = 'Registration successful! Please check your email to confirm your account.';
@@ -111,14 +110,14 @@ export class RegisterComponent {
             this.errorMessage = response.errors.join(', ');
           }
         }
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        // Re-enable the form on error too
-        this.registerForm.enable();
         this.isLoading = false;
-
+        this.cdr.detectChanges();
         this.errorMessage = error.message || 'An error occurred during registration.';
         console.error('Registration error:', error);
+        this.cdr.detectChanges();
       }
     });
   }
