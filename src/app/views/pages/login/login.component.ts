@@ -81,9 +81,14 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = null;
 
+    // Disable the form while loading
+    this.loginForm.disable();
+
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.loginForm.enable();
+
         if (response.success) {
           // User data is already stored in AuthService
           // Just redirect to the return URL
@@ -94,8 +99,9 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
+        this.loginForm.enable();
+
         this.errorMessage = error.message || 'An error occurred during login.';
-        console.error('Login error:', error);
       }
     });
   }
