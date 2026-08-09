@@ -113,7 +113,12 @@ export class AuthService {
   resendConfirmation(email: string): Observable<ServiceResponse<null>> {
     return this.http.post<ServiceResponse<null>>(
       `${this.apiUrl}/User/resend-confirmation`,
-      email
+      null,
+      {
+        params: {
+          email: email
+        }
+      }
     ).pipe(
       catchError(this.handleError)
     );
@@ -125,7 +130,12 @@ export class AuthService {
   forgotPassword(email: string): Observable<ServiceResponse<null>> {
     return this.http.post<ServiceResponse<null>>(
       `${this.apiUrl}/User/forgot-password`,
-      email
+      null,
+      {
+        params: {
+          email: email
+        }
+      }
     ).pipe(
       catchError(this.handleError)
     );
