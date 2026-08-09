@@ -75,9 +75,9 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
       console.log('Reset Password Component initialized with email:', this.email, 'and token:', this.token);
 
-      // If missing required parameters, show error
+      // If missing required parameters, redirect to login for security.
       if (!this.email || !this.token) {
-        this.errorMessage = 'Invalid or missing reset link. Please request a new password reset.';
+        this.router.navigate(['/login']);
       }
     });
   }
