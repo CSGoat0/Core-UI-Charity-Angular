@@ -86,12 +86,18 @@ export class RegisterComponent {
     this.errorMessage = null;
     this.successMessage = null;
 
+    // Disable the entire form while loading
+    this.registerForm.disable();
+
     // Remove confirmPassword from the request payload
     const { confirmPassword, ...registrationData } = this.registerForm.value;
 
     this.authService.register(registrationData).subscribe({
       next: (response) => {
+        // Re-enable the form
+        this.registerForm.enable();
         this.isLoading = false;
+
         if (response.success) {
           this.successMessage = 'Registration successful! Please check your email to confirm your account.';
           // Redirect to login after 3 seconds
@@ -107,7 +113,10 @@ export class RegisterComponent {
         }
       },
       error: (error) => {
+        // Re-enable the form on error too
+        this.registerForm.enable();
         this.isLoading = false;
+
         this.errorMessage = error.message || 'An error occurred during registration.';
         console.error('Registration error:', error);
       }

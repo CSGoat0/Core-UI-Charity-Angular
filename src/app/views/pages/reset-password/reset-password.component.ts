@@ -123,16 +123,14 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     this.successMessage = null;
     this.isSubmitted = false;
 
-    // Disable form controls while loading
-    this.resetForm.get('password')?.disable();
-    this.resetForm.get('confirmPassword')?.disable();
+    // Disable the entire form while loading
+    this.resetForm.disable();
 
     // Safety timeout - stop loading after 15 seconds
     this.timeoutId = setTimeout(() => {
       if (this.isLoading) {
         this.isLoading = false;
-        this.resetForm.get('password')?.enable();
-        this.resetForm.get('confirmPassword')?.enable();
+        this.resetForm.enable();
         this.errorMessage = 'Request timed out. Please try again.';
         console.warn('Reset password request timed out');
       }
@@ -154,8 +152,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
         // Reset loading state and re-enable controls
         this.isLoading = false;
-        this.resetForm.get('password')?.enable();
-        this.resetForm.get('confirmPassword')?.enable();
+        this.resetForm.enable();
 
         if (response.success) {
           this.isSubmitted = true;
@@ -178,8 +175,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
         // Reset loading state and re-enable controls
         this.isLoading = false;
-        this.resetForm.get('password')?.enable();
-        this.resetForm.get('confirmPassword')?.enable();
+        this.resetForm.enable();
 
         this.errorMessage = error.message || 'An error occurred. Please try again.';
         console.error('Reset password error:', error);
@@ -193,8 +189,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     this.successMessage = null;
     this.errorMessage = null;
     this.resetForm.reset();
-    this.resetForm.get('password')?.enable();
-    this.resetForm.get('confirmPassword')?.enable();
+    this.resetForm.enable();
   }
 
   // Navigate back to forgot password
