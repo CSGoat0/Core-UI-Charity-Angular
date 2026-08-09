@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IconDirective } from '@coreui/icons-angular';
@@ -49,7 +49,7 @@ export class ForgotPasswordComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private cdr: ChangeDetectorRef
   ) {
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
@@ -59,6 +59,7 @@ export class ForgotPasswordComponent {
   onSubmit(): void {
     if (this.forgotForm.invalid) {
       this.forgotForm.get('email')?.markAsTouched();
+      this.cdr.detectChanges();
       return;
     }
 
@@ -66,18 +67,14 @@ export class ForgotPasswordComponent {
     this.errorMessage = null;
     this.successMessage = null;
     this.isSubmitted = false;
-
-    // Disable the email control while loading
-    this.forgotForm.get('email')?.disable();
+    this.cdr.detectChanges();
 
     const email = this.forgotForm.get('email')?.value;
 
     this.authService.forgotPassword(email).subscribe({
       next: (response) => {
         this.isLoading = false;
-
-        // Re-enable the email control
-        this.forgotForm.get('email')?.enable();
+        this.cdr.detectChanges();
 
         if (response.success) {
           this.successMessage = response.message || 'Password reset link has been sent to your email.';
@@ -85,15 +82,14 @@ export class ForgotPasswordComponent {
         } else {
           this.errorMessage = response.message || 'Failed to send reset link. Please try again.';
         }
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.isLoading = false;
-
-        // Re-enable the email control on error too
-        this.forgotForm.get('email')?.enable();
-
+        this.cdr.detectChanges();
         this.errorMessage = error.message || 'An error occurred. Please try again.';
         console.error('Forgot password error:', error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -104,9 +100,9 @@ export class ForgotPasswordComponent {
     this.successMessage = null;
     this.errorMessage = null;
     this.forgotForm.reset();
-    // Ensure the control is enabled
-    this.forgotForm.get('email')?.enable();
+    this.cdr.detectChanges();
   }
 
+  // Convenience getter for email control
   get email() { return this.forgotForm.get('email'); }
 }
