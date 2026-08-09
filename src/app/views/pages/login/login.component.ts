@@ -178,15 +178,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  // Reset error when user starts typing
-  onFieldChange(): void {
-    if (this.errorMessage) {
-      this.errorMessage = null;
-      this.showResendConfirmation = false;
-      this.cdr.detectChanges();
-    }
-  }
-
   get userName() { return this.loginForm.get('userName'); }
   get password() { return this.loginForm.get('password'); }
 }

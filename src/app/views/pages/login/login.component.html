@@ -61,7 +61,6 @@
                     formControlName="userName"
                     placeholder="Username or Email"
                     autocomplete="username"
-                    (input)="onFieldChange()"
                     [ngClass]="{
                       'is-invalid': userName?.invalid && userName?.touched,
                       'is-valid': userName?.valid && userName?.touched
@@ -83,7 +82,6 @@
                     formControlName="password"
                     placeholder="Password"
                     autocomplete="current-password"
-                    (input)="onFieldChange()"
                     [ngClass]="{
                       'is-invalid': password?.invalid && password?.touched,
                       'is-valid': password?.valid && password?.touched
