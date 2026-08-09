@@ -87,6 +87,13 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'confirm-email',
+    loadComponent: () => import('./views/pages/confirm-email/confirm-email.component').then(m => m.ConfirmEmailComponent),
+    data: {
+      title: 'Confirm Email'
+    }
+  },
+  {
     path: '404',
     loadComponent: () => import('./views/pages/page404/page404.component').then(m => m.Page404Component),
     data: {
