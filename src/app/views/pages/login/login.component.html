@@ -5,7 +5,8 @@
         <c-card-group>
           <c-card class="p-4">
             <c-card-body>
-              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" cForm>
+              <!-- Add autocomplete="on" and name to the form -->
+              <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" cForm autocomplete="on" name="loginForm">
                 <h1>Login</h1>
                 <p class="text-body-secondary">Sign In to your account</p>
 
@@ -13,6 +14,41 @@
                 <c-alert *ngIf="errorMessage" color="danger" dismissible>
                   {{ errorMessage }}
                 </c-alert>
+
+                <!-- Success Alert for Resend -->
+                <c-alert *ngIf="resendSuccess" color="success" dismissible>
+                  {{ resendSuccess }}
+                </c-alert>
+
+                <!-- Resend Confirmation Section -->
+                <div *ngIf="showResendConfirmation" class="mb-3 p-3 border rounded bg-light">
+                  <p class="mb-2 text-body-secondary">
+                    Your email address has not been confirmed. Please check your inbox for the confirmation link.
+                  </p>
+                  <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <button
+                      cButton
+                      color="primary"
+                      size="sm"
+                      (click)="resendConfirmation()"
+                      [disabled]="isResending"
+                    >
+                      <span *ngIf="isResending" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ isResending ? 'Sending...' : 'Resend Confirmation Email' }}
+                    </button>
+                    <button
+                      cButton
+                      color="secondary"
+                      size="sm"
+                      (click)="showResendConfirmation = false"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <div *ngIf="resendError" class="text-danger small mt-2">
+                    {{ resendError }}
+                  </div>
+                </div>
 
                 <!-- Username Field -->
                 <c-input-group class="mb-3">
@@ -24,7 +60,8 @@
                     cFormControl
                     formControlName="userName"
                     placeholder="Username or Email"
-                    autoComplete="username"
+                    autocomplete="username"
+                    (input)="onFieldChange()"
                     [ngClass]="{
                       'is-invalid': userName?.invalid && userName?.touched,
                       'is-valid': userName?.valid && userName?.touched
@@ -45,7 +82,8 @@
                     cFormControl
                     formControlName="password"
                     placeholder="Password"
-                    autoComplete="current-password"
+                    autocomplete="current-password"
+                    (input)="onFieldChange()"
                     [ngClass]="{
                       'is-invalid': password?.invalid && password?.touched,
                       'is-valid': password?.valid && password?.touched
