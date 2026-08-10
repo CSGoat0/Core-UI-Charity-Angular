@@ -152,6 +152,9 @@ export class AuthService {
     );
   }
 
+  /**
+   * Change password (authenticated user)
+   */
   changePassword(userId: string, passwordData: ChangePasswordRequest): Observable<ServiceResponse<null>> {
     return this.http.put<ServiceResponse<null>>(
       `${this.apiUrl}/User/${userId}/change-password`,
