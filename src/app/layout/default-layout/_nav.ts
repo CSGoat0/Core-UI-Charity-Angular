@@ -11,6 +11,11 @@ export const navItems: INavData[] = [
     }
   },
   {
+    name: 'Profile',
+    url: '/profile',
+    iconComponent: { name: 'cil-user' }
+  },
+  {
     title: true,
     name: 'Theme'
   },
