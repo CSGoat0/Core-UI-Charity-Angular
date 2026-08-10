@@ -1,0 +1,284 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="12">
+        <c-card>
+          <c-card-header>
+            <h5 class="mb-0">
+              <svg cIcon name="cilUser" class="me-2"></svg>
+              My Profile
+            </h5>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading profile...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Profile Content -->
+            <ng-container *ngIf="!isLoading && user">
+
+              <!-- Tabs Navigation -->
+              <c-nav variant="tabs" class="mb-3">
+                <c-nav-item>
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'profile'"
+                    (click)="activeTab = 'profile'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cilUser" class="me-1"></svg>
+                    Profile
+                  </a>
+                </c-nav-item>
+                <c-nav-item>
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'password'"
+                    (click)="activeTab = 'password'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cilLockLocked" class="me-1"></svg>
+                    Change Password
+                  </a>
+                </c-nav-item>
+              </c-nav>
+
+              <!-- Profile Tab -->
+              <div *ngIf="activeTab === 'profile'">
+                <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+                  <c-row>
+                    <c-col md="6" class="mb-3">
+                      <label cLabel for="fullName">Full Name</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilUser"></svg>
+                        </span>
+                        <input
+                          type="text"
+                          cFormControl
+                          id="fullName"
+                          formControlName="fullName"
+                          placeholder="Enter your full name"
+                          [ngClass]="{
+                            'is-invalid': fullName?.invalid && fullName?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="fullName?.invalid && fullName?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="fullName?.errors?.['required']">Full name is required</span>
+                        <span *ngIf="fullName?.errors?.['minlength']">Full name must be at least 2 characters</span>
+                      </div>
+                    </c-col>
+
+                    <c-col md="6" class="mb-3">
+                      <label cLabel for="userName">Username</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilUser"></svg>
+                        </span>
+                        <input
+                          type="text"
+                          cFormControl
+                          id="userName"
+                          formControlName="userName"
+                          placeholder="Enter your username"
+                          [ngClass]="{
+                            'is-invalid': userName?.invalid && userName?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="userName?.errors?.['required']">Username is required</span>
+                        <span *ngIf="userName?.errors?.['minlength']">Username must be at least 3 characters</span>
+                      </div>
+                    </c-col>
+
+                    <c-col md="6" class="mb-3">
+                      <label cLabel for="email">Email</label>
+                      <c-input-group>
+                        <span cInputGroupText>@</span>
+                        <input
+                          type="email"
+                          cFormControl
+                          id="email"
+                          formControlName="email"
+                          placeholder="Enter your email"
+                          [disabled]="true"
+                          [ngClass]="{
+                            'is-invalid': email?.invalid && email?.touched,
+                            'is-valid': email?.valid && email?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="email?.errors?.['required']">Email is required</span>
+                        <span *ngIf="email?.errors?.['email']">Please enter a valid email address</span>
+                      </div>
+                      <small class="text-muted">Email cannot be changed</small>
+                    </c-col>
+
+                    <c-col md="6" class="mb-3">
+                      <label cLabel for="phoneNumber">Phone Number</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilPhone"></svg>
+                        </span>
+                        <input
+                          type="tel"
+                          cFormControl
+                          id="phoneNumber"
+                          formControlName="phoneNumber"
+                          placeholder="Enter your phone number"
+                        />
+                      </c-input-group>
+                    </c-col>
+                  </c-row>
+
+                  <div class="d-flex gap-2 mt-3">
+                    <button
+                      cButton
+                      color="primary"
+                      type="submit"
+                      [disabled]="isLoading || profileForm.invalid"
+                    >
+                      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ isLoading ? 'Saving...' : 'Save Changes' }}
+                    </button>
+                    <button
+                      cButton
+                      color="secondary"
+                      type="button"
+                      (click)="loadUserProfile()"
+                      [disabled]="isLoading"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Change Password Tab -->
+              <div *ngIf="activeTab === 'password'">
+                <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+                  <c-alert *ngIf="passwordErrorMessage" color="danger" dismissible>
+                    {{ passwordErrorMessage }}
+                  </c-alert>
+
+                  <c-alert *ngIf="passwordSuccessMessage" color="success" dismissible>
+                    {{ passwordSuccessMessage }}
+                  </c-alert>
+
+                  <c-row>
+                    <c-col md="8" class="mb-3">
+                      <label cLabel for="currentPassword">Current Password</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilLockLocked"></svg>
+                        </span>
+                        <input
+                          type="password"
+                          cFormControl
+                          id="currentPassword"
+                          formControlName="currentPassword"
+                          placeholder="Enter your current password"
+                          [ngClass]="{
+                            'is-invalid': currentPassword?.invalid && currentPassword?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="currentPassword?.invalid && currentPassword?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="currentPassword?.errors?.['required']">Current password is required</span>
+                      </div>
+                    </c-col>
+
+                    <c-col md="8" class="mb-3">
+                      <label cLabel for="newPassword">New Password</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilLockLocked"></svg>
+                        </span>
+                        <input
+                          type="password"
+                          cFormControl
+                          id="newPassword"
+                          formControlName="newPassword"
+                          placeholder="Enter your new password (min 6 characters)"
+                          [ngClass]="{
+                            'is-invalid': newPassword?.invalid && newPassword?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="newPassword?.invalid && newPassword?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="newPassword?.errors?.['required']">New password is required</span>
+                        <span *ngIf="newPassword?.errors?.['minlength']">Password must be at least 6 characters</span>
+                      </div>
+                    </c-col>
+
+                    <c-col md="8" class="mb-3">
+                      <label cLabel for="confirmNewPassword">Confirm New Password</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cilLockLocked"></svg>
+                        </span>
+                        <input
+                          type="password"
+                          cFormControl
+                          id="confirmNewPassword"
+                          formControlName="confirmNewPassword"
+                          placeholder="Confirm your new password"
+                          [ngClass]="{
+                            'is-invalid': (confirmNewPassword?.invalid && confirmNewPassword?.touched) || passwordForm.errors?.['passwordMismatch']
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="(confirmNewPassword?.invalid && confirmNewPassword?.touched) || passwordForm.errors?.['passwordMismatch']" class="invalid-feedback d-block">
+                        <span *ngIf="confirmNewPassword?.errors?.['required']">Please confirm your password</span>
+                        <span *ngIf="passwordForm.errors?.['passwordMismatch']">Passwords do not match</span>
+                      </div>
+                    </c-col>
+                  </c-row>
+
+                  <div class="d-flex gap-2 mt-3">
+                    <button
+                      cButton
+                      color="primary"
+                      type="submit"
+                      [disabled]="isPasswordLoading || passwordForm.invalid"
+                    >
+                      <span *ngIf="isPasswordLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      {{ isPasswordLoading ? 'Changing...' : 'Change Password' }}
+                    </button>
+                    <button
+                      cButton
+                      color="secondary"
+                      type="button"
+                      (click)="passwordForm.reset()"
+                      [disabled]="isPasswordLoading"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </ng-container>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -57,7 +57,6 @@ export class AuthService {
           if (response.data.user) {
             this.currentUserSubject.next(response.data.user);
             localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
-            console.log('User data stored from login response:', response.data.user);
           }
 
           this.isAuthenticatedSubject.next(true);
@@ -153,13 +152,10 @@ export class AuthService {
     );
   }
 
-  /**
-   * Change password (authenticated user)
-   */
-  changePassword(userId: string, changeData: ChangePasswordRequest): Observable<ServiceResponse<null>> {
+  changePassword(userId: string, passwordData: ChangePasswordRequest): Observable<ServiceResponse<null>> {
     return this.http.put<ServiceResponse<null>>(
       `${this.apiUrl}/User/${userId}/change-password`,
-      changeData
+      passwordData
     ).pipe(
       catchError(this.handleError)
     );
@@ -173,18 +169,18 @@ export class AuthService {
    * Get current user profile
    */
   getCurrentUser(): Observable<ServiceResponse<UserDto>> {
-    const userId = this.getUserId();
-    if (!userId) {
+    const user = this.getUser();
+
+    if (!user || !user.id) {
       return throwError(() => new Error('User not authenticated'));
     }
 
     return this.http.get<ServiceResponse<UserDto>>(
-      `${this.apiUrl}/User/${userId}`
+      `${this.apiUrl}/User/${user.id}`
     ).pipe(
       tap(response => {
         if (response.success && response.data) {
-          this.currentUserSubject.next(response.data);
-          localStorage.setItem(this.userKey, JSON.stringify(response.data));
+          this.updateCurrentUser(response.data);
         }
       }),
       catchError(this.handleError)
@@ -198,8 +194,41 @@ export class AuthService {
     return this.http.get<ServiceResponse<UserDto>>(
       `${this.apiUrl}/User/${userId}`
     ).pipe(
+      tap(response => {
+        if (response.success && response.data) {
+          this.updateCurrentUser(response.data);
+        }
+      }),
       catchError(this.handleError)
     );
+  }
+
+  /**
+   * Update user profile - DOES NOT update local data automatically
+   * Caller should call getUserById() after successful update
+   */
+  updateUser(userData: any): Observable<ServiceResponse<null>> {
+    return this.http.put<ServiceResponse<null>>(
+      `${this.apiUrl}/User/${userData.id}`,
+      userData
+    ).pipe(
+      tap(response => {
+        console.log('[AuthService] updateUser response:', response);
+        // We don't update local data here because the response doesn't contain user data
+        // The caller should call getUserById() to refresh the data
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Update the current user data in the service and localStorage
+   */
+  updateCurrentUser(user: UserDto): void {
+    console.log('[AuthService] updateCurrentUser called with:', user);
+    this.currentUserSubject.next(user);
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    console.log('[AuthService] User data saved to localStorage');
   }
 
   // ==============================
@@ -239,8 +268,7 @@ export class AuthService {
           localStorage.setItem(this.tokenKey, response.data.token);
 
           if (response.data.user) {
-            this.currentUserSubject.next(response.data.user);
-            localStorage.setItem(this.userKey, JSON.stringify(response.data.user));
+            this.updateCurrentUser(response.data.user);
           }
 
           this.isAuthenticatedSubject.next(true);
@@ -328,7 +356,6 @@ export class AuthService {
     if (user && token) {
       this.currentUserSubject.next(user);
       this.isAuthenticatedSubject.next(true);
-      console.log('User restored from storage:', user);
     } else {
       this.currentUserSubject.next(null);
       this.isAuthenticatedSubject.next(false);
@@ -356,6 +383,9 @@ export class AuthService {
             break;
           case 404:
             errorMessage = 'Resource not found.';
+            break;
+          case 415:
+            errorMessage = 'Unsupported media type. Please try again.';
             break;
           case 500:
             errorMessage = 'Server error. Please try again later.';
