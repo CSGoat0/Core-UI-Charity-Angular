@@ -1,6 +1,9 @@
-import { INavData } from '@coreui/angular';
+import { INavDataExtended } from './_nav.model';
 
-export const navItems: INavData[] = [
+export const navItems: INavDataExtended[] = [
+  // ==============================
+  // MAIN NAVIGATION - Visible to all authenticated users
+  // ==============================
   {
     name: 'Dashboard',
     url: '/dashboard',
@@ -15,6 +18,71 @@ export const navItems: INavData[] = [
     url: '/profile',
     iconComponent: { name: 'cil-user' }
   },
+
+  // ==============================
+  // ADMIN & SUPER ADMIN SECTION - Role-based visibility
+  // ==============================
+  {
+    title: true,
+    name: 'Administration',
+    roles: ['Admin', 'SuperAdmin']
+  },
+  {
+    name: 'Admin Panel',
+    url: '/admin',
+    iconComponent: { name: 'cil-settings' },
+    roles: ['Admin', 'SuperAdmin'],
+    children: [
+      {
+        name: 'Dashboard',
+        url: '/admin/dashboard',
+        icon: 'nav-icon-bullet',
+        roles: ['Admin', 'SuperAdmin']
+      },
+      {
+        name: 'Users',
+        url: '/admin/users',
+        icon: 'nav-icon-bullet',
+        roles: ['SuperAdmin']
+      },
+      {
+        name: 'Roles',
+        url: '/admin/roles',
+        icon: 'nav-icon-bullet',
+        roles: ['SuperAdmin']
+      }
+    ]
+  },
+
+  // ==============================
+  // FUTURE FEATURES - Placeholders (commented out)
+  // Uncomment when implementing these features
+  // ==============================
+  /*
+  {
+    title: true,
+    name: 'Features'
+  },
+  {
+    name: 'Organizations',
+    url: '/organizations',
+    iconComponent: { name: 'cil-building' }
+  },
+  {
+    name: 'Campaigns',
+    url: '/campaigns',
+    iconComponent: { name: 'cil-megaphone' }
+  },
+  {
+    name: 'Donations',
+    url: '/donations',
+    iconComponent: { name: 'cil-heart' }
+  },
+  */
+
+  // ==============================
+  // THEME SECTION - Demo items (keep for now, remove later)
+  // ==============================
   {
     title: true,
     name: 'Theme'
