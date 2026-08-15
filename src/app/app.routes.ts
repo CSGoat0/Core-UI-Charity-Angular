@@ -28,6 +28,13 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'organizations',
+        loadChildren: () => import('./views/organizations/routes').then((m) => m.routes),
+        data: {
+          title: 'Organizations'
+        }
+      },
+      {
         path: 'theme',
         loadChildren: () => import('./views/theme/routes').then((m) => m.routes)
       },

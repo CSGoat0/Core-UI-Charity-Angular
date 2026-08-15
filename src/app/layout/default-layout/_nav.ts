@@ -58,15 +58,15 @@ export const navItems: INavDataExtended[] = [
   // FUTURE FEATURES - Placeholders (commented out)
   // Uncomment when implementing these features
   // ==============================
-  /*
-  {
-    title: true,
-    name: 'Features'
-  },
   {
     name: 'Organizations',
     url: '/organizations',
     iconComponent: { name: 'cil-building' }
+  },
+  /*
+  {
+    title: true,
+    name: 'Features'
   },
   {
     name: 'Campaigns',

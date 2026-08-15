@@ -1,0 +1,201 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="12">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-building" class="me-2"></svg>
+                Organizations
+              </h5>
+              <div>
+                <button
+                  cButton
+                  color="primary"
+                  routerLink="/organizations/create"
+                  *ngIf="canManage"
+                >
+                  <svg cIcon name="cil-plus" class="me-1"></svg>
+                  Add Organization
+                </button>
+              </div>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading organizations...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Search and Filter -->
+            <div class="row mb-3" *ngIf="!isLoading">
+              <div class="col-md-6">
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cilMagnifyingGlass"></svg>
+                  </span>
+                  <input
+                    cFormControl
+                    type="text"
+                    placeholder="Search organizations..."
+                    [(ngModel)]="searchTerm"
+                    (keyup.enter)="searchOrganizations()"
+                  />
+                  <button cButton color="secondary" (click)="searchOrganizations()">
+                    Search
+                  </button>
+                  <button cButton color="secondary" (click)="clearSearch()" *ngIf="searchTerm">
+                    Clear
+                  </button>
+                </c-input-group>
+              </div>
+              <div class="col-md-6 text-end">
+                <div class="form-check form-switch d-inline-block me-3">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="includeDeleted"
+                    [(ngModel)]="includeDeleted"
+                    (change)="toggleDeleted()"
+                  />
+                  <label class="form-check-label" for="includeDeleted">
+                    Include Deleted
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div *ngIf="!isLoading && organizations.length === 0" class="text-center py-4">
+              <p class="text-body-secondary">No organizations found.</p>
+              <button
+                cButton
+                color="primary"
+                routerLink="/organizations/create"
+                *ngIf="canManage"
+              >
+                <svg cIcon name="cil-plus" class="me-1"></svg>
+                Create your first organization
+              </button>
+            </div>
+
+            <table cTable striped *ngIf="!isLoading && organizations.length > 0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Admin</th>
+                  <th>Status</th>
+                  <th>Registered</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let org of organizations">
+                  <td>{{ org.id }}</td>
+                  <td>
+                    <a href="javascript:void(0)" (click)="viewOrganization(org.id)" class="text-primary">
+                      {{ org.name }}
+                    </a>
+                  </td>
+                  <td>{{ org.address || '-' }}</td>
+                  <td>{{ org.adminUserFullName || org.adminUserName || '-' }}</td>
+                  <td>
+                    <c-badge [color]="getStatusBadgeColor(org.isDeleted)">
+                      {{ getStatusText(org.isDeleted) }}
+                    </c-badge>
+                  </td>
+                  <td>{{ org.registrationDate | date:'mediumDate' }}</td>
+                  <td class="text-center">
+                    <button
+                      cButton
+                      color="info"
+                      size="sm"
+                      class="me-1"
+                      (click)="viewOrganization(org.id)"
+                      cTooltip="View"
+                    >
+                      <svg cIcon name="cil-eye"></svg>
+                    </button>
+                    <button
+                      cButton
+                      color="warning"
+                      size="sm"
+                      class="me-1"
+                      (click)="editOrganization(org.id)"
+                      *ngIf="canManage"
+                      cTooltip="Edit"
+                    >
+                      <svg cIcon name="cil-pencil"></svg>
+                    </button>
+                    <button
+                      cButton
+                      color="success"
+                      size="sm"
+                      class="me-1"
+                      (click)="restoreOrganization(org.id)"
+                      *ngIf="org.isDeleted && canDelete"
+                      cTooltip="Restore"
+                    >
+                      <svg cIcon name="cil-arrow-circle-left"></svg>
+                    </button>
+                    <button
+                      cButton
+                      color="danger"
+                      size="sm"
+                      (click)="deleteOrganization(org.id)"
+                      *ngIf="!org.isDeleted && canDelete"
+                      cTooltip="Delete"
+                    >
+                      <svg cIcon name="cil-trash"></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div *ngIf="!isLoading && pagination && totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <span class="text-body-secondary">
+                  Showing {{ ((currentPage - 1) * pageSize) + 1 }} to
+                  {{ Math.min(currentPage * pageSize, pagination.totalCount) }} of
+                  {{ pagination.totalCount }} entries
+                </span>
+              </div>
+              <c-pagination aria-label="Page navigation">
+                <c-page-item [disabled]="currentPage === 1">
+                  <a cPageLink (click)="changePage(currentPage - 1)">Previous</a>
+                </c-page-item>
+                <c-page-item *ngFor="let page of getPageNumbers()" [active]="page === currentPage">
+                  <a cPageLink (click)="changePage(page)">
+                    {{ page }}
+                  </a>
+                </c-page-item>
+                <c-page-item [disabled]="currentPage === totalPages">
+                  <a cPageLink (click)="changePage(currentPage + 1)">Next</a>
+                </c-page-item>
+              </c-pagination>
+            </div>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>
