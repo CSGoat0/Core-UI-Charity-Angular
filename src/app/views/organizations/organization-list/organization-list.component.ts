@@ -93,34 +93,69 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.cdr.detectChanges();
 
-    const params: PaginationParameters = {
-      pageNumber: this.currentPage,
-      pageSize: this.pageSize,
-      searchTerm: this.searchTerm || undefined
-    };
+    if (this.searchTerm && this.searchTerm.trim().length > 0) {
+      // Use search endpoint
+      const params: PaginationParameters = {
+        pageNumber: this.currentPage,
+        pageSize: this.pageSize
+      };
 
-    this.organizationService.getAllOrganizations(params, this.includeDeleted).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.cdr.detectChanges();
+      this.organizationService.searchOrganizations(params, this.searchTerm.trim()).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
 
-        if (response.success && response.data) {
-          this.organizations = response.data.items;
-          this.pagination = response.data;
-          this.totalPages = response.data.totalPages;
-        } else {
-          this.errorMessage = response.message || 'Failed to load organizations.';
+          if (response.success && response.data) {
+            this.organizations = response.data.items;
+            this.pagination = response.data;
+            this.totalPages = response.data.totalPages;
+          } else {
+            this.errorMessage = response.message || 'No organizations found.';
+            this.organizations = [];
+            this.pagination = null;
+            this.totalPages = 0;
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          this.errorMessage = error.message || 'An error occurred searching organizations.';
+          console.error('Search organizations error:', error);
+          this.cdr.detectChanges();
         }
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.cdr.detectChanges();
-        this.errorMessage = error.message || 'An error occurred loading organizations.';
-        console.error('Load organizations error:', error);
-        this.cdr.detectChanges();
-      }
-    });
+      });
+    } else {
+      // Use regular list endpoint
+      const params: PaginationParameters = {
+        pageNumber: this.currentPage,
+        pageSize: this.pageSize,
+        searchTerm: this.searchTerm || undefined
+      };
+
+      this.organizationService.getAllOrganizations(params, this.includeDeleted).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+
+          if (response.success && response.data) {
+            this.organizations = response.data.items;
+            this.pagination = response.data;
+            this.totalPages = response.data.totalPages;
+          } else {
+            this.errorMessage = response.message || 'Failed to load organizations.';
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          this.errorMessage = error.message || 'An error occurred loading organizations.';
+          console.error('Load organizations error:', error);
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   searchOrganizations(): void {
@@ -232,7 +267,7 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
     return isDeleted ? 'Deleted' : 'Active';
   }
 
-  // ✅ Safe role checks with try/catch
+  // Safe role checks with try/catch
   get canManage(): boolean {
     try {
       if (!this.authService.isAuthenticated()) {
