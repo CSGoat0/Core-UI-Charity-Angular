@@ -300,7 +300,12 @@ export class AuthService {
     const userData = localStorage.getItem(this.userKey);
     if (userData) {
       try {
-        return JSON.parse(userData);
+        const user = JSON.parse(userData);
+        // Ensure roles is always an array
+        if (!user.roles || !Array.isArray(user.roles)) {
+          user.roles = [];
+        }
+        return user;
       } catch {
         return null;
       }
@@ -328,7 +333,14 @@ export class AuthService {
    */
   hasRole(role: string): boolean {
     const user = this.getUser();
-    return user ? user.roles.includes(role) : false;
+    // Safe check with multiple fallbacks
+    if (!user) {
+      return false;
+    }
+    if (!user.roles || !Array.isArray(user.roles)) {
+      return false;
+    }
+    return user.roles.includes(role);
   }
 
   /**
