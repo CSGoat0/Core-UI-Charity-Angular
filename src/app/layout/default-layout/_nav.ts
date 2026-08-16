@@ -66,7 +66,7 @@ export const navItems: INavDataExtended[] = [
   {
     name: 'Campaigns',
     url: '/campaigns',
-    iconComponent: { name: 'cil-megaphone' }
+    iconComponent: { name: 'cil-bullhorn' }
   },
   /*
   {
