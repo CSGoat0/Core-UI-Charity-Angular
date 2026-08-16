@@ -15,13 +15,13 @@ export const routes: Routes = [
       title: 'Create Organization'
     }
   },
-  // {
-  //   path: ':id',
-  //   loadComponent: () => import('./organization-details/organization-details.component').then(m => m.OrganizationDetailsComponent),
-  //   data: {
-  //     title: 'Organization Details'
-  //   }
-  // },
+  {
+    path: ':id',
+    loadComponent: () => import('./organization-details/organization-details.component').then(m => m.OrganizationDetailsComponent),
+    data: {
+      title: 'Organization Details'
+    }
+  },
   {
     path: ':id/edit',
     loadComponent: () => import('./organization-form/organization-form.component').then(m => m.OrganizationFormComponent),
