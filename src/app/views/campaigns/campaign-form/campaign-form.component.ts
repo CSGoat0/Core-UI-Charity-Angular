@@ -1,0 +1,300 @@
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import {
+  ButtonDirective,
+  CardBodyComponent,
+  CardComponent,
+  CardHeaderComponent,
+  ColComponent,
+  ContainerComponent,
+  RowComponent,
+  AlertComponent,
+  FormControlDirective,
+  InputGroupComponent,
+  InputGroupTextDirective,
+  FormLabelDirective
+} from '@coreui/angular';
+import { IconDirective } from '@coreui/icons-angular';
+import { CampaignService } from '../../../services/campaign.service';
+import { OrganizationService } from '../../../services/organization.service';
+import { AuthService } from '../../../services/auth.service';
+import { CampaignType, CampaignStatus } from '../../../models/campaign.models';
+import { OrganizationDropDown } from '../../../models/organization.models';
+
+@Component({
+  selector: 'app-campaign-form',
+  templateUrl: './campaign-form.component.html',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    ContainerComponent,
+    RowComponent,
+    ColComponent,
+    CardComponent,
+    CardHeaderComponent,
+    CardBodyComponent,
+    ButtonDirective,
+    AlertComponent,
+    IconDirective,
+    FormControlDirective,
+    InputGroupComponent,
+    InputGroupTextDirective,
+    FormLabelDirective
+  ]
+})
+export class CampaignFormComponent implements OnInit, OnDestroy {
+  campaignForm: FormGroup;
+  isLoading = false;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
+  isEditMode = false;
+  campaignId: number | null = null;
+  pageTitle = 'Create Campaign';
+  isShared = false;
+
+  organizations: OrganizationDropDown[] = [];
+  selectedOrganizationIds: number[] = [];
+  isLoadingOrganizations = false;
+
+  typeOptions = [
+    { value: CampaignType.Solo, label: 'Solo' },
+    { value: CampaignType.Shared, label: 'Shared' }
+  ];
+
+  private timeoutId: any = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private campaignService: CampaignService,
+    private organizationService: OrganizationService,
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.campaignForm = this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(200)]],
+      description: ['', [Validators.maxLength(1000)]],
+      target: [0, [Validators.required, Validators.min(1)]],
+      type: [CampaignType.Solo, [Validators.required]],
+      organizationId: ['', [Validators.required]],
+      deadline: ['', [Validators.required]],
+      organizationIds: [[]]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadOrganizations();
+
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.isEditMode = true;
+        this.campaignId = parseInt(id, 10);
+        this.pageTitle = 'Edit Campaign';
+        this.loadCampaign(this.campaignId);
+      }
+    });
+
+    // Listen to type changes to show/hide shared campaign fields
+    this.campaignForm.get('type')?.valueChanges.subscribe((type) => {
+      this.isShared = type === CampaignType.Shared;
+      if (this.isShared) {
+        this.campaignForm.get('organizationId')?.clearValidators();
+        this.campaignForm.get('organizationId')?.updateValueAndValidity();
+        this.campaignForm.get('organizationIds')?.setValidators([Validators.required]);
+        this.campaignForm.get('organizationIds')?.updateValueAndValidity();
+      } else {
+        this.campaignForm.get('organizationIds')?.clearValidators();
+        this.campaignForm.get('organizationIds')?.updateValueAndValidity();
+        this.campaignForm.get('organizationId')?.setValidators([Validators.required]);
+        this.campaignForm.get('organizationId')?.updateValueAndValidity();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+  }
+
+  loadOrganizations(): void {
+    this.isLoadingOrganizations = true;
+    const params = { pageNumber: 1, pageSize: 100 };
+
+    this.organizationService.getOrganizationsDropdown(params).subscribe({
+      next: (response) => {
+        this.isLoadingOrganizations = false;
+        this.cdr.detectChanges();
+
+        if (response.success && response.data) {
+          this.organizations = response.data.items;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingOrganizations = false;
+        this.cdr.detectChanges();
+        console.error('Load organizations error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadCampaign(id: number): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.cdr.detectChanges();
+
+    this.campaignService.getCampaignById(id).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+
+        if (response.success && response.data) {
+          const data = response.data;
+          this.isShared = data.type === CampaignType.Shared;
+
+          this.campaignForm.patchValue({
+            title: data.title,
+            description: data.description || '',
+            target: data.target,
+            type: data.type,
+            organizationId: data.organizationId,
+            deadline: data.deadline ? new Date(data.deadline).toISOString().split('T')[0] : '',
+            organizationIds: []
+          });
+
+          // For shared campaigns, load organization IDs
+          if (this.isShared) {
+            // You would need to fetch the associated organizations here
+            // This is a placeholder - you might need an additional API call
+          }
+        } else {
+          this.errorMessage = response.message || 'Failed to load campaign.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        this.errorMessage = error.message || 'An error occurred loading the campaign.';
+        console.error('Load campaign error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onSubmit(): void {
+    if (this.campaignForm.invalid) {
+      Object.keys(this.campaignForm.controls).forEach(key => {
+        this.campaignForm.get(key)?.markAsTouched();
+      });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.cdr.detectChanges();
+
+    const formData = this.campaignForm.value;
+    const type = formData.type as CampaignType;
+
+    if (this.isEditMode && this.campaignId) {
+      // Update campaign
+      if (type === CampaignType.Solo) {
+        const updateData = {
+          id: this.campaignId,
+          title: formData.title,
+          description: formData.description,
+          target: formData.target,
+          type: formData.type,
+          organizationId: formData.organizationId
+        };
+        this.campaignService.updateSoloCampaign(this.campaignId, updateData).subscribe({
+          next: (response) => this.handleSuccess(response),
+          error: (error) => this.handleError(error)
+        });
+      } else {
+        // Shared campaign update - you would need a similar method
+        this.errorMessage = 'Updating shared campaigns is not yet implemented.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    } else {
+      // Create campaign
+      if (type === CampaignType.Solo) {
+        const createData = {
+          title: formData.title,
+          description: formData.description,
+          target: formData.target,
+          type: formData.type,
+          startDate: new Date(),
+          deadline: new Date(formData.deadline),
+          organizationId: parseInt(formData.organizationId, 10)
+        };
+        this.campaignService.createSoloCampaign(createData).subscribe({
+          next: (response) => this.handleSuccess(response),
+          error: (error) => this.handleError(error)
+        });
+      } else {
+        const createData = {
+          title: formData.title,
+          description: formData.description,
+          target: formData.target,
+          type: formData.type,
+          startDate: new Date(),
+          deadline: new Date(formData.deadline),
+          organizationIds: formData.organizationIds || [],
+          creatorOrganizationId: parseInt(formData.organizationId, 10)
+        };
+        this.campaignService.createSharedCampaign(createData).subscribe({
+          next: (response) => this.handleSuccess(response),
+          error: (error) => this.handleError(error)
+        });
+      }
+    }
+  }
+
+  private handleSuccess(response: any): void {
+    this.isLoading = false;
+    this.cdr.detectChanges();
+
+    if (response.success) {
+      this.successMessage = this.isEditMode ? 'Campaign updated successfully!' : 'Campaign created successfully!';
+      this.timeoutId = setTimeout(() => {
+        this.router.navigate(['/campaigns']);
+      }, 2000);
+    } else {
+      this.errorMessage = response.message || (this.isEditMode ? 'Failed to update campaign.' : 'Failed to create campaign.');
+    }
+    this.cdr.detectChanges();
+  }
+
+  private handleError(error: any): void {
+    this.isLoading = false;
+    this.cdr.detectChanges();
+    this.errorMessage = error.message || 'An error occurred. Please try again.';
+    console.error('Campaign form error:', error);
+    this.cdr.detectChanges();
+  }
+
+  get title() { return this.campaignForm.get('title'); }
+  get description() { return this.campaignForm.get('description'); }
+  get target() { return this.campaignForm.get('target'); }
+  get type() { return this.campaignForm.get('type'); }
+  get organizationId() { return this.campaignForm.get('organizationId'); }
+  get deadline() { return this.campaignForm.get('deadline'); }
+  get organizationIds() { return this.campaignForm.get('organizationIds'); }
+
+  get canManage(): boolean {
+    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+  }
+}

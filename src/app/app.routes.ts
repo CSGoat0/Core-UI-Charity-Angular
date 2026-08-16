@@ -35,6 +35,13 @@ export const routes: Routes = [
         }
       },
       {
+        path: 'campaigns',
+        loadChildren: () => import('./views/campaigns/routes').then((m) => m.routes),
+        data: {
+          title: 'Campaigns'
+        }
+      },
+      {
         path: 'theme',
         loadChildren: () => import('./views/theme/routes').then((m) => m.routes)
       },

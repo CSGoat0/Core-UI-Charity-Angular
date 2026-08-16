@@ -1,0 +1,264 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="12">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-megaphone" class="me-2"></svg>
+                Campaign Details
+                <span *ngIf="campaign" class="ms-2 text-body-secondary">
+                  - {{ campaign.title }}
+                </span>
+              </h5>
+              <div class="d-flex gap-2">
+                <button
+                  cButton
+                  color="secondary"
+                  size="sm"
+                  (click)="goBack()"
+                >
+                  <svg cIcon name="cil-arrow-left" class="me-1"></svg>
+                  Back
+                </button>
+                <button
+                  cButton
+                  color="info"
+                  size="sm"
+                  (click)="manageInvites()"
+                  *ngIf="isShared && canManage && campaign && !campaign.isDeleted"
+                >
+                  <svg cIcon name="cil-people" class="me-1"></svg>
+                  Invites
+                </button>
+                <button
+                  cButton
+                  color="warning"
+                  size="sm"
+                  (click)="editCampaign()"
+                  *ngIf="canManage && campaign && !campaign.isDeleted"
+                >
+                  <svg cIcon name="cil-pencil" class="me-1"></svg>
+                  Edit
+                </button>
+              </div>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading campaign details...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Campaign Details -->
+            <ng-container *ngIf="!isLoading && campaign">
+
+              <!-- Status Badge -->
+              <div class="mb-3">
+                <c-badge [color]="getStatusBadgeColor(campaign.status)">
+                  {{ getStatusText(campaign.status) }}
+                </c-badge>
+                <c-badge [color]="campaign.type === 0 ? 'primary' : 'success'" class="ms-2">
+                  {{ getTypeText(campaign.type) }}
+                </c-badge>
+                <span *ngIf="campaign.isDeleted" class="text-danger ms-2">
+                  (This campaign has been deleted)
+                </span>
+              </div>
+
+              <!-- Tabs Navigation -->
+              <c-nav variant="tabs" class="mb-3">
+                <c-nav-item>
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'details'"
+                    (click)="activeTab = 'details'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-info" class="me-1"></svg>
+                    Details
+                  </a>
+                </c-nav-item>
+                <c-nav-item>
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'donations'"
+                    (click)="activeTab = 'donations'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-heart" class="me-1"></svg>
+                    Donations ({{ campaign.totalDonationsCount || 0 }})
+                  </a>
+                </c-nav-item>
+                <c-nav-item *ngIf="isShared">
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'organizations'"
+                    (click)="activeTab = 'organizations'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-building" class="me-1"></svg>
+                    Organizations
+                  </a>
+                </c-nav-item>
+              </c-nav>
+
+              <!-- Details Tab -->
+              <div *ngIf="activeTab === 'details'">
+                <!-- Progress Section -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between">
+                    <span class="fw-semibold">Progress</span>
+                    <span class="fw-semibold">
+                      {{ campaign.achieved | currency }} / {{ campaign.target | currency }}
+                      ({{ getProgressPercentage().toFixed(1) }}%)
+                    </span>
+                  </div>
+                  <div class="progress mt-2" style="height: 20px;">
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      [style.width.%]="getProgressPercentage()"
+                      [attr.aria-valuenow]="getProgressPercentage()"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {{ getProgressPercentage().toFixed(0) }}%
+                    </div>
+                  </div>
+                  <div class="small text-body-secondary mt-1">
+                    <span *ngIf="campaign.achievementPercentage !== undefined && campaign.achievementPercentage !== null">
+                      Achievement: {{ campaign.achievementPercentage.toFixed(1) }}%
+                    </span>
+                    <span *ngIf="campaign.remainingAmount !== undefined && campaign.remainingAmount !== null" class="ms-3">
+                      Remaining: {{ campaign.remainingAmount | currency }}
+                    </span>
+                    <span *ngIf="campaign.daysRemaining !== undefined && campaign.daysRemaining !== null" class="ms-3">
+                      <span *ngIf="campaign.daysRemaining > 0; else expired">
+                        Days Left: {{ campaign.daysRemaining }}
+                      </span>
+                      <ng-template #expired>
+                        <span class="text-danger">Expired</span>
+                      </ng-template>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Details Grid -->
+                <c-row>
+                  <c-col md="6" class="mb-2">
+                    <strong>ID:</strong> {{ campaign.id }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Title:</strong> {{ campaign.title }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Description:</strong> {{ campaign.description || 'Not provided' }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Type:</strong> {{ getTypeText(campaign.type) }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Organization:</strong> {{ campaign.organizationId }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Status:</strong>
+                    <c-badge [color]="getStatusBadgeColor(campaign.status)">
+                      {{ getStatusText(campaign.status) }}
+                    </c-badge>
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Registration Date:</strong> {{ campaign.registrationDate | date:'medium' }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Deadline:</strong> {{ campaign.deadline | date:'mediumDate' }}
+                  </c-col>
+                  <c-col md="6" class="mb-2">
+                    <strong>Last Updated:</strong> {{ campaign.updatedOn ? (campaign.updatedOn | date:'medium') : 'Never' }}
+                  </c-col>
+                </c-row>
+              </div>
+
+              <!-- Donations Tab -->
+              <div *ngIf="activeTab === 'donations'">
+                <div *ngIf="campaign.recentDonations && campaign.recentDonations.length > 0">
+                  <div class="mb-3">
+                    <h6>Recent Donations</h6>
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Amount</th>
+                          <th>Donor</th>
+                          <th>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let donation of campaign.recentDonations">
+                          <td>{{ donation.id }}</td>
+                          <td>{{ donation.amount | currency }}</td>
+                          <td>{{ donation.userName || 'Anonymous' }}</td>
+                          <td>{{ donation.registrationDate | date:'medium' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div *ngIf="!campaign.recentDonations || campaign.recentDonations.length === 0" class="text-center py-3">
+                  <p class="text-body-secondary">No donations yet for this campaign.</p>
+                </div>
+              </div>
+
+              <!-- Organizations Tab (Shared Campaigns) -->
+              <div *ngIf="activeTab === 'organizations' && isShared">
+                <div *ngIf="hasOrganizations">
+                  <h6>Participating Organizations</h6>
+                  <p class="text-body-secondary small" *ngIf="campaign.creatorOrganizationName">
+                    Creator: {{ campaign.creatorOrganizationName }}
+                  </p>
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th *ngIf="campaign.creatorOrganizationId">Role</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let org of campaign.organizations">
+                        <td>{{ org.id }}</td>
+                        <td>{{ org.name }}</td>
+                        <td *ngIf="campaign.creatorOrganizationId">
+                          <span *ngIf="org.id === campaign.creatorOrganizationId" class="text-primary">
+                            <c-badge color="primary">Creator</c-badge>
+                          </span>
+                          <span *ngIf="org.id !== campaign.creatorOrganizationId" class="text-muted">
+                            Participant
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div *ngIf="!hasOrganizations" class="text-center py-3">
+                  <p class="text-body-secondary">No organizations participating in this shared campaign.</p>
+                </div>
+              </div>
+
+            </ng-container>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

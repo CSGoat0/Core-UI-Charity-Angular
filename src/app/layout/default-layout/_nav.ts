@@ -63,15 +63,15 @@ export const navItems: INavDataExtended[] = [
     url: '/organizations',
     iconComponent: { name: 'cil-building' }
   },
-  /*
-  {
-    title: true,
-    name: 'Features'
-  },
   {
     name: 'Campaigns',
     url: '/campaigns',
     iconComponent: { name: 'cil-megaphone' }
+  },
+  /*
+  {
+    title: true,
+    name: 'Features'
   },
   {
     name: 'Donations',
