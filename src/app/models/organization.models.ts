@@ -14,7 +14,8 @@ export interface Organization {
 
 export interface OrganizationDetails extends Organization {
   contactMethods: OrgContactMethod[];
-  campaigns: CampaignResponse[];
+  soloCampaigns: CampaignResponse[];
+  sharedCampaigns: CampaignResponse[];
   soloCampaignsCount: number;
   sharedCampaignsCount: number;
   totalCampaignsCount: number;
@@ -51,8 +52,8 @@ export interface CampaignResponse {
   description: string;
   startDate: Date;
   endDate: Date;
-  goalAmount: number;
-  raisedAmount: number;
+  target: number;
+  achieved: number;
   status: CampaignStatus;
   organizationId: number;
   organizationName: string;

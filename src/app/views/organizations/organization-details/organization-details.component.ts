@@ -93,7 +93,6 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.cdr.detectChanges();
         this.errorMessage = error.message || 'An error occurred loading organization details.';
-        console.error('Load organization details error:', error);
         this.cdr.detectChanges();
       }
     });
