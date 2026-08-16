@@ -65,26 +65,32 @@
                 </c-input-group>
               </div>
               <div class="col-md-3">
-                <select
-                  cFormControl
-                  [(ngModel)]="filterStatus"
-                  (change)="searchCampaigns()"
-                >
-                  <option *ngFor="let option of statusOptions" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedStatusLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100">
+                    <li *ngFor="let option of statusOptions">
+                      <a cDropdownItem (click)="filterStatus = option.value; searchCampaigns()">
+                        {{ option.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
               </div>
               <div class="col-md-3">
-                <select
-                  cFormControl
-                  [(ngModel)]="filterType"
-                  (change)="searchCampaigns()"
-                >
-                  <option *ngFor="let option of typeOptions" [value]="option.value">
-                    {{ option.label }}
-                  </option>
-                </select>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedTypeLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100">
+                    <li *ngFor="let option of typeOptions">
+                      <a cDropdownItem (click)="filterType = option.value; searchCampaigns()">
+                        {{ option.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
               </div>
               <div class="col-md-2 text-end">
                 <div class="form-check form-switch d-inline-block me-3">

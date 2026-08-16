@@ -20,6 +20,10 @@ import {
   InputGroupComponent,
   InputGroupTextDirective,
   TooltipDirective,
+  DropdownComponent,
+  DropdownToggleDirective,
+  DropdownMenuDirective,
+  DropdownItemDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
@@ -51,6 +55,10 @@ import { CampaignResponse, CampaignStatus, CampaignType, PaginatedResponse, Pagi
     InputGroupComponent,
     InputGroupTextDirective,
     TooltipDirective,
+    DropdownComponent,
+    DropdownToggleDirective,
+    DropdownMenuDirective,
+    DropdownItemDirective
   ]
 })
 export class CampaignListComponent implements OnInit, OnDestroy {
@@ -289,6 +297,16 @@ export class CampaignListComponent implements OnInit, OnDestroy {
 
   getTypeText(type: CampaignType): string {
     return CampaignType[type] || 'Unknown';
+  }
+
+  getSelectedStatusLabel(): string {
+    const option = this.statusOptions.find(o => o.value === this.filterStatus);
+    return option ? option.label : 'All Statuses';
+  }
+
+  getSelectedTypeLabel(): string {
+    const option = this.typeOptions.find(o => o.value === this.filterType);
+    return option ? option.label : 'All Types';
   }
 
   get canManage(): boolean {
