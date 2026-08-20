@@ -68,8 +68,8 @@
                 <c-badge [color]="getStatusBadgeColor(campaign.status)">
                   {{ getStatusText(campaign.status) }}
                 </c-badge>
-                <c-badge [color]="campaign.type === 0 ? 'primary' : 'success'" class="ms-2">
-                  {{ getTypeText(campaign.type) }}
+                <c-badge [color]="campaign.type === 'Solo' ? 'primary' : 'success'" class="ms-2">
+                  {{ campaign.type }}
                 </c-badge>
                 <span *ngIf="campaign.isDeleted" class="text-danger ms-2">
                   (This campaign has been deleted)
@@ -166,7 +166,7 @@
                     <strong>Description:</strong> {{ campaign.description || 'Not provided' }}
                   </c-col>
                   <c-col md="6" class="mb-2">
-                    <strong>Type:</strong> {{ getTypeText(campaign.type) }}
+                    <strong>Type:</strong> {{ campaign.type }}
                   </c-col>
                   <c-col md="6" class="mb-2">
                     <strong>Organization:</strong> {{ campaign.organizationId }}

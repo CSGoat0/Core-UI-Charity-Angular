@@ -13,12 +13,12 @@ import {
   BadgeComponent,
   NavComponent,
   NavItemComponent,
-  NavLinkDirective,
+  NavLinkDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
 import { AuthService } from '../../../services/auth.service';
-import { CampaignDetails, CampaignStatus, CampaignType } from '../../../models/campaign.models';
+import { CampaignDetails, CampaignStatus, CampaignType, isSharedCampaign, isSoloCampaign } from '../../../models/campaign.models';
 
 @Component({
   selector: 'app-campaign-details',
@@ -37,7 +37,7 @@ import { CampaignDetails, CampaignStatus, CampaignType } from '../../../models/c
     IconDirective,
     NavComponent,
     NavItemComponent,
-    NavLinkDirective,
+    NavLinkDirective
   ]
 })
 export class CampaignDetailsComponent implements OnInit, OnDestroy {
@@ -85,7 +85,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
         if (response.success && response.data) {
           this.campaign = response.data;
           // For shared campaigns, fetch organizations separately if needed
-          if (this.campaign.type === CampaignType.Shared) {
+          if (isSharedCampaign(this.campaign.type)) {
             this.loadSharedCampaignOrganizations(id);
           }
         } else {
@@ -132,7 +132,7 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   }
 
   manageInvites(): void {
-    if (this.campaign && this.campaign.type === CampaignType.Shared) {
+    if (this.campaign && isSharedCampaign(this.campaign.type)) {
       this.router.navigate(['/campaigns', this.campaign.id, 'invites']);
     }
   }
@@ -151,8 +151,8 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
     return CampaignStatus[status] || 'Unknown';
   }
 
-  getTypeText(type: CampaignType): string {
-    return CampaignType[type] || 'Unknown';
+  getTypeText(type: string): string {
+    return type || 'Unknown';
   }
 
   getProgressPercentage(): number {
@@ -171,11 +171,11 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   }
 
   get isShared(): boolean {
-    return this.campaign?.type === CampaignType.Shared;
+    return this.campaign ? isSharedCampaign(this.campaign.type) : false;
   }
 
   get isSolo(): boolean {
-    return this.campaign?.type === CampaignType.Solo;
+    return this.campaign ? isSoloCampaign(this.campaign.type) : false;
   }
 
   get hasOrganizations(): boolean {

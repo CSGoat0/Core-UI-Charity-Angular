@@ -9,7 +9,7 @@ export interface CampaignResponse {
   target: number;
   achieved: number;
   status: CampaignStatus;
-  type: CampaignType;
+  type: string;
   isDeleted: boolean;
   registrationDate: Date;
   updatedOn: Date | null;
@@ -70,7 +70,7 @@ export interface CreateSoloCampaignRequest {
   title: string;
   description: string;
   target: number;
-  type: CampaignType;
+  type: string;
   startDate: Date;
   deadline: Date;
   organizationId: number;
@@ -81,7 +81,7 @@ export interface CreateSharedCampaignRequest {
   title: string;
   description: string;
   target: number;
-  type: CampaignType;
+  type: string;
   startDate: Date;
   deadline: Date;
   organizationIds: number[];
@@ -95,7 +95,7 @@ export interface UpdateCampaignRequest {
   description?: string;
   imgPath?: string;
   target?: number;
-  type?: CampaignType;
+  type?: string;
 }
 
 export interface UpdateSoloCampaignRequest extends UpdateCampaignRequest {
@@ -147,5 +147,35 @@ export enum InviteStatus {
   Expired = 3
 }
 
-// Re-export for convenience
+// Helper functions for type conversion
+export function getCampaignTypeFromString(value: string): CampaignType {
+  switch (value?.toLowerCase()) {
+    case 'solo':
+      return CampaignType.Solo;
+    case 'shared':
+      return CampaignType.Shared;
+    default:
+      return CampaignType.Solo;
+  }
+}
+
+export function getCampaignTypeString(value: CampaignType): string {
+  switch (value) {
+    case CampaignType.Solo:
+      return 'Solo';
+    case CampaignType.Shared:
+      return 'Shared';
+    default:
+      return 'Solo';
+  }
+}
+
+export function isSharedCampaign(type: string): boolean {
+  return type?.toLowerCase() === 'shared';
+}
+
+export function isSoloCampaign(type: string): boolean {
+  return type?.toLowerCase() === 'solo';
+}
+
 export type { PaginationParameters, PaginatedResponse, ServiceResponse };

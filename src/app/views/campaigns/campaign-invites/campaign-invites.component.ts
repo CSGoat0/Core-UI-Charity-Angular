@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -226,8 +226,6 @@ export class CampaignInvitesComponent implements OnInit, OnDestroy {
   }
 
   cancelInvite(inviteId: number): void {
-    // Note: There's no cancel endpoint in the API, but we can reject it
-    // This is a workaround - you might want to add a cancel endpoint
     if (!confirm('Are you sure you want to cancel this invite?')) {
       return;
     }

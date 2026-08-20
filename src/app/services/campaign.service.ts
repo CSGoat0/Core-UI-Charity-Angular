@@ -18,8 +18,6 @@ import {
   PaginatedResponse,
   ServiceResponse,
   CampaignStatus,
-  CampaignType,
-  InviteStatus
 } from '../models/campaign.models';
 
 @Injectable({
@@ -47,12 +45,6 @@ export class CampaignService {
   getCampaignById(id: number): Observable<ServiceResponse<CampaignDetails>> {
     return this.http.get<ServiceResponse<CampaignDetails>>(
       `${this.apiUrl}/${id}`
-    );
-  }
-
-  getCampaignDetails(id: number): Observable<ServiceResponse<CampaignDetails>> {
-    return this.http.get<ServiceResponse<CampaignDetails>>(
-      `${this.apiUrl}/${id}/details`
     );
   }
 
@@ -284,9 +276,9 @@ export class CampaignService {
     );
   }
 
-  getCampaignsByType(params: PaginationParameters, type: CampaignType): Observable<ServiceResponse<PaginatedResponse<CampaignResponse>>> {
+  getCampaignsByType(params: PaginationParameters, type: string): Observable<ServiceResponse<PaginatedResponse<CampaignResponse>>> {
     let httpParams = this.buildPaginationParams(params);
-    httpParams = httpParams.set('type', type.toString());
+    httpParams = httpParams.set('type', type);
 
     return this.http.get<ServiceResponse<PaginatedResponse<CampaignResponse>>>(
       `${this.apiUrl}/filter/by-type`,

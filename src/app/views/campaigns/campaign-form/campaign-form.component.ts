@@ -20,7 +20,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
 import { OrganizationService } from '../../../services/organization.service';
 import { AuthService } from '../../../services/auth.service';
-import { CampaignType, CampaignStatus } from '../../../models/campaign.models';
+import { isSharedCampaign, isSoloCampaign } from '../../../models/campaign.models';
 import { OrganizationDropDown } from '../../../models/organization.models';
 
 @Component({
@@ -56,12 +56,11 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
   isShared = false;
 
   organizations: OrganizationDropDown[] = [];
-  selectedOrganizationIds: number[] = [];
   isLoadingOrganizations = false;
 
   typeOptions = [
-    { value: CampaignType.Solo, label: 'Solo' },
-    { value: CampaignType.Shared, label: 'Shared' }
+    { value: 'Solo', label: 'Solo' },
+    { value: 'Shared', label: 'Shared' }
   ];
 
   private timeoutId: any = null;
@@ -79,7 +78,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
       title: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', [Validators.maxLength(1000)]],
       target: [0, [Validators.required, Validators.min(1)]],
-      type: [CampaignType.Solo, [Validators.required]],
+      type: ['Solo', [Validators.required]],
       organizationId: ['', [Validators.required]],
       deadline: ['', [Validators.required]],
       organizationIds: [[]]
@@ -101,7 +100,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
 
     // Listen to type changes to show/hide shared campaign fields
     this.campaignForm.get('type')?.valueChanges.subscribe((type) => {
-      this.isShared = type === CampaignType.Shared;
+      this.isShared = isSharedCampaign(type);
       if (this.isShared) {
         this.campaignForm.get('organizationId')?.clearValidators();
         this.campaignForm.get('organizationId')?.updateValueAndValidity();
@@ -158,7 +157,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
 
         if (response.success && response.data) {
           const data = response.data;
-          this.isShared = data.type === CampaignType.Shared;
+          this.isShared = isSharedCampaign(data.type);
 
           this.campaignForm.patchValue({
             title: data.title,
@@ -169,12 +168,6 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
             deadline: data.deadline ? new Date(data.deadline).toISOString().split('T')[0] : '',
             organizationIds: []
           });
-
-          // For shared campaigns, load organization IDs
-          if (this.isShared) {
-            // You would need to fetch the associated organizations here
-            // This is a placeholder - you might need an additional API call
-          }
         } else {
           this.errorMessage = response.message || 'Failed to load campaign.';
         }
@@ -205,11 +198,11 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
 
     const formData = this.campaignForm.value;
-    const type = formData.type as CampaignType;
+    const type = formData.type;
 
     if (this.isEditMode && this.campaignId) {
       // Update campaign
-      if (type === CampaignType.Solo) {
+      if (isSoloCampaign(type)) {
         const updateData = {
           id: this.campaignId,
           title: formData.title,
@@ -223,14 +216,13 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
           error: (error) => this.handleError(error)
         });
       } else {
-        // Shared campaign update - you would need a similar method
         this.errorMessage = 'Updating shared campaigns is not yet implemented.';
         this.isLoading = false;
         this.cdr.detectChanges();
       }
     } else {
       // Create campaign
-      if (type === CampaignType.Solo) {
+      if (isSoloCampaign(type)) {
         const createData = {
           title: formData.title,
           description: formData.description,

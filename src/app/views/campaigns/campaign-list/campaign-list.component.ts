@@ -28,7 +28,7 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
 import { AuthService } from '../../../services/auth.service';
-import { CampaignResponse, CampaignStatus, CampaignType, PaginatedResponse, PaginationParameters } from '../../../models/campaign.models';
+import { CampaignResponse, CampaignStatus, PaginatedResponse, PaginationParameters } from '../../../models/campaign.models';
 
 @Component({
   selector: 'app-campaign-list',
@@ -90,8 +90,8 @@ export class CampaignListComponent implements OnInit, OnDestroy {
 
   typeOptions = [
     { value: '', label: 'All Types' },
-    { value: '0', label: 'Solo' },
-    { value: '1', label: 'Shared' }
+    { value: 'Solo', label: 'Solo' },
+    { value: 'Shared', label: 'Shared' }
   ];
 
   private timeoutId: any = null;
@@ -132,7 +132,7 @@ export class CampaignListComponent implements OnInit, OnDestroy {
         error: (error) => this.handleError(error)
       });
     } else if (this.filterType) {
-      this.campaignService.getCampaignsByType(params, parseInt(this.filterType, 10) as CampaignType).subscribe({
+      this.campaignService.getCampaignsByType(params, this.filterType).subscribe({
         next: (response) => this.handleResponse(response),
         error: (error) => this.handleError(error)
       });
@@ -295,8 +295,8 @@ export class CampaignListComponent implements OnInit, OnDestroy {
     return CampaignStatus[status] || 'Unknown';
   }
 
-  getTypeText(type: CampaignType): string {
-    return CampaignType[type] || 'Unknown';
+  getTypeText(type: string): string {
+    return type || 'Unknown';
   }
 
   getSelectedStatusLabel(): string {
@@ -329,5 +329,9 @@ export class CampaignListComponent implements OnInit, OnDestroy {
       }
     }
     return pages;
+  }
+
+  isSharedCampaign(type: string): boolean {
+    return type?.toLowerCase() === 'shared';
   }
 }

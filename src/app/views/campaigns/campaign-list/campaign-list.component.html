@@ -144,8 +144,8 @@
                     </a>
                   </td>
                   <td>
-                    <c-badge [color]="campaign.type === 0 ? 'primary' : 'success'">
-                      {{ getTypeText(campaign.type) }}
+                    <c-badge [color]="campaign.type === 'Solo' ? 'primary' : 'success'">
+                      {{ campaign.type }}
                     </c-badge>
                   </td>
                   <td>
@@ -191,7 +191,7 @@
                       size="sm"
                       class="me-1"
                       (click)="manageInvites(campaign.id)"
-                      *ngIf="campaign.type === 1 && !campaign.isDeleted && canManage"
+                      *ngIf="campaign.type === 'Shared' && !campaign.isDeleted && canManage"
                       cTooltip="Manage Invites"
                     >
                       <svg cIcon name="cil-people"></svg>
