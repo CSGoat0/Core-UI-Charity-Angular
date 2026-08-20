@@ -129,10 +129,12 @@ export interface UpdateInviteStatusRequest {
 }
 
 export enum CampaignStatus {
-  Draft = 0,
+  Preparing = 0,
   Active = 1,
   Completed = 2,
-  Cancelled = 3
+  Dismissed = 3,
+  Postponed = 4,
+  Expired = 5
 }
 
 export enum CampaignType {

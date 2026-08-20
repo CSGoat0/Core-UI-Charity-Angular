@@ -139,10 +139,12 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
 
   getStatusBadgeColor(status: CampaignStatus): string {
     const statusMap: { [key: number]: string } = {
-      [CampaignStatus.Draft]: 'secondary',
+      [CampaignStatus.Preparing]: 'secondary',
       [CampaignStatus.Active]: 'success',
       [CampaignStatus.Completed]: 'info',
-      [CampaignStatus.Cancelled]: 'danger'
+      [CampaignStatus.Dismissed]: 'danger',
+      [CampaignStatus.Postponed]: 'warning',
+      [CampaignStatus.Expired]: 'dark'
     };
     return statusMap[status] || 'secondary';
   }

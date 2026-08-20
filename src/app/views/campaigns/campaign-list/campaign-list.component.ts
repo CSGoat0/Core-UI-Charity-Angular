@@ -82,10 +82,12 @@ export class CampaignListComponent implements OnInit, OnDestroy {
   // Status and Type options
   statusOptions = [
     { value: '', label: 'All Statuses' },
-    { value: '0', label: 'Draft' },
+    { value: '0', label: 'Preparing' },
     { value: '1', label: 'Active' },
     { value: '2', label: 'Completed' },
-    { value: '3', label: 'Cancelled' }
+    { value: '3', label: 'Dismissed' },
+    { value: '4', label: 'Postponed' },
+    { value: '5', label: 'Expired' }
   ];
 
   typeOptions = [
@@ -283,10 +285,12 @@ export class CampaignListComponent implements OnInit, OnDestroy {
 
   getStatusBadgeColor(status: CampaignStatus): string {
     const statusMap: { [key: number]: string } = {
-      [CampaignStatus.Draft]: 'secondary',
+      [CampaignStatus.Preparing]: 'secondary',
       [CampaignStatus.Active]: 'success',
       [CampaignStatus.Completed]: 'info',
-      [CampaignStatus.Cancelled]: 'danger'
+      [CampaignStatus.Dismissed]: 'danger',
+      [CampaignStatus.Postponed]: 'warning',
+      [CampaignStatus.Expired]: 'dark'
     };
     return statusMap[status] || 'secondary';
   }
