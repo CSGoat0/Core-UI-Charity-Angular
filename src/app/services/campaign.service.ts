@@ -166,21 +166,21 @@ export class CampaignService {
 
   sendInvite(campaignId: number, request: SendInviteRequest): Observable<ServiceResponse<InviteResponse>> {
     return this.http.post<ServiceResponse<InviteResponse>>(
-      `${this.apiUrl}/${campaignId}/invites`,
+      `${environment.apiUrl}/campaigns/${campaignId}/invites`,
       request
     );
   }
 
   acceptInvite(inviteId: number): Observable<ServiceResponse<null>> {
     return this.http.post<ServiceResponse<null>>(
-      `${this.apiUrl}/invites/${inviteId}/accept`,
+      `${environment.apiUrl}/campaigns/invites/${inviteId}/accept`,
       {}
     );
   }
 
   rejectInvite(inviteId: number): Observable<ServiceResponse<null>> {
     return this.http.post<ServiceResponse<null>>(
-      `${this.apiUrl}/invites/${inviteId}/reject`,
+      `${environment.apiUrl}/campaigns/invites/${inviteId}/reject`,
       {}
     );
   }
@@ -189,7 +189,7 @@ export class CampaignService {
     let httpParams = this.buildPaginationParams(params);
 
     return this.http.get<ServiceResponse<PaginatedResponse<InviteResponse>>>(
-      `${this.apiUrl}/${campaignId}/invites`,
+      `${environment.apiUrl}/campaigns/${campaignId}/invites`,
       { params: httpParams }
     );
   }
@@ -198,7 +198,7 @@ export class CampaignService {
     let httpParams = this.buildPaginationParams(params);
 
     return this.http.get<ServiceResponse<PaginatedResponse<InviteResponse>>>(
-      `${this.apiUrl}/invites/pending`,
+      `${environment.apiUrl}/campaigns/invites/pending`,
       { params: httpParams }
     );
   }
@@ -207,14 +207,14 @@ export class CampaignService {
     let httpParams = this.buildPaginationParams(params);
 
     return this.http.get<ServiceResponse<PaginatedResponse<InviteResponse>>>(
-      `${this.apiUrl}/invites/sent`,
+      `${environment.apiUrl}/campaigns/invites/sent`,
       { params: httpParams }
     );
   }
 
   hasPendingInvite(campaignId: number, organizationId: number): Observable<ServiceResponse<boolean>> {
     return this.http.get<ServiceResponse<boolean>>(
-      `${this.apiUrl}/${campaignId}/invites/pending/${organizationId}`
+      `${environment.apiUrl}/campaigns/${campaignId}/invites/pending/${organizationId}`
     );
   }
 
