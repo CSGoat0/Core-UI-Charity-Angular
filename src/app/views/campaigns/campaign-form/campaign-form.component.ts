@@ -14,7 +14,11 @@ import {
   FormControlDirective,
   InputGroupComponent,
   InputGroupTextDirective,
-  FormLabelDirective
+  FormLabelDirective,
+  DropdownComponent,
+  DropdownToggleDirective,
+  DropdownMenuDirective,
+  DropdownItemDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
@@ -42,7 +46,11 @@ import { OrganizationDropDown } from '../../../models/organization.models';
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,
-    FormLabelDirective
+    FormLabelDirective,
+    DropdownComponent,
+    DropdownToggleDirective,
+    DropdownMenuDirective,
+    DropdownItemDirective
   ]
 })
 export class CampaignFormComponent implements OnInit, OnDestroy {
@@ -95,22 +103,6 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
         this.campaignId = parseInt(id, 10);
         this.pageTitle = 'Edit Campaign';
         this.loadCampaign(this.campaignId);
-      }
-    });
-
-    // Listen to type changes to show/hide shared campaign fields
-    this.campaignForm.get('type')?.valueChanges.subscribe((type) => {
-      this.isShared = isSharedCampaign(type);
-      if (this.isShared) {
-        this.campaignForm.get('organizationId')?.clearValidators();
-        this.campaignForm.get('organizationId')?.updateValueAndValidity();
-        this.campaignForm.get('organizationIds')?.setValidators([Validators.required]);
-        this.campaignForm.get('organizationIds')?.updateValueAndValidity();
-      } else {
-        this.campaignForm.get('organizationIds')?.clearValidators();
-        this.campaignForm.get('organizationIds')?.updateValueAndValidity();
-        this.campaignForm.get('organizationId')?.setValidators([Validators.required]);
-        this.campaignForm.get('organizationId')?.updateValueAndValidity();
       }
     });
   }
@@ -183,6 +175,70 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  onTypeChange(type: string): void {
+    this.isShared = isSharedCampaign(type);
+    if (this.isShared) {
+      this.campaignForm.get('organizationId')?.clearValidators();
+      this.campaignForm.get('organizationId')?.updateValueAndValidity();
+      this.campaignForm.get('organizationIds')?.setValidators([Validators.required]);
+      this.campaignForm.get('organizationIds')?.updateValueAndValidity();
+    } else {
+      this.campaignForm.get('organizationIds')?.clearValidators();
+      this.campaignForm.get('organizationIds')?.updateValueAndValidity();
+      this.campaignForm.get('organizationId')?.setValidators([Validators.required]);
+      this.campaignForm.get('organizationId')?.updateValueAndValidity();
+    }
+    this.cdr.detectChanges();
+  }
+
+  toggleOrganizationSelection(orgId: number): void {
+    const currentIds = this.campaignForm.get('organizationIds')?.value || [];
+    const index = currentIds.indexOf(orgId);
+    if (index > -1) {
+      currentIds.splice(index, 1);
+    } else {
+      currentIds.push(orgId);
+    }
+    this.campaignForm.get('organizationIds')?.setValue([...currentIds]);
+    this.campaignForm.get('organizationIds')?.markAsTouched();
+    this.cdr.detectChanges();
+  }
+
+  isOrganizationSelected(orgId: number): boolean {
+    const currentIds = this.campaignForm.get('organizationIds')?.value || [];
+    return currentIds.includes(orgId);
+  }
+
+  getSelectedTypeLabel(): string {
+    const value = this.campaignForm.get('type')?.value;
+    const option = this.typeOptions.find(o => o.value === value);
+    return option ? option.label : 'Select campaign type';
+  }
+
+  getSelectedOrganizationLabel(): string {
+    const value = this.campaignForm.get('organizationId')?.value;
+    if (!value) return 'Select an organization';
+    const org = this.organizations.find(o => o.id === value);
+    return org ? org.name : 'Select an organization';
+  }
+
+  getSelectedCreatorOrganizationLabel(): string {
+    const value = this.campaignForm.get('organizationId')?.value;
+    if (!value) return 'Select creator organization';
+    const org = this.organizations.find(o => o.id === value);
+    return org ? org.name : 'Select creator organization';
+  }
+
+  getSelectedOrganizationIdsLabel(): string {
+    const currentIds = this.campaignForm.get('organizationIds')?.value || [];
+    if (currentIds.length === 0) return 'Select organizations';
+    if (currentIds.length === 1) {
+      const org = this.organizations.find(o => o.id === currentIds[0]);
+      return org ? org.name : '1 organization selected';
+    }
+    return `${currentIds.length} organizations selected`;
+  }
+
   onSubmit(): void {
     if (this.campaignForm.invalid) {
       Object.keys(this.campaignForm.controls).forEach(key => {
@@ -201,7 +257,6 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
     const type = formData.type;
 
     if (this.isEditMode && this.campaignId) {
-      // Update campaign
       if (isSoloCampaign(type)) {
         const updateData = {
           id: this.campaignId,
@@ -221,7 +276,6 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     } else {
-      // Create campaign
       if (isSoloCampaign(type)) {
         const createData = {
           title: formData.title,
