@@ -1,0 +1,165 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="12">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-people" class="me-2"></svg>
+                Campaign Invites
+                <span *ngIf="campaignTitle" class="ms-2 text-body-secondary">
+                  - {{ campaignTitle }}
+                </span>
+              </h5>
+              <button
+                cButton
+                color="secondary"
+                size="sm"
+                (click)="goBack()"
+              >
+                <svg cIcon name="cil-arrow-left" class="me-1"></svg>
+                Back to Campaign
+              </button>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Send Invite Form -->
+            <div class="row mb-4" *ngIf="canManage">
+              <div class="col-md-12">
+                <div class="bg-light p-3 rounded">
+                  <h6 class="mb-3">Send New Invite</h6>
+                  <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                      <label class="form-label">Organization</label>
+                      <select
+                        class="form-select"
+                        [(ngModel)]="selectedOrganizationId"
+                        [disabled]="isSendingInvite || isLoadingOrganizations"
+                      >
+                        <option [value]="null">Select an organization...</option>
+                        <option *ngFor="let org of organizations" [value]="org.id">
+                          {{ org.name }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label">Expires In (Days)</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        [(ngModel)]="expiresInDays"
+                        min="1"
+                        max="30"
+                        [disabled]="isSendingInvite"
+                      />
+                    </div>
+                    <div class="col-md-2">
+                      <button
+                        cButton
+                        color="primary"
+                        (click)="sendInvite()"
+                        [disabled]="isSendingInvite || !selectedOrganizationId"
+                      >
+                        <span *ngIf="isSendingInvite" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        {{ isSendingInvite ? 'Sending...' : 'Send Invite' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading invites...</p>
+            </div>
+
+            <!-- Invites Table -->
+            <div *ngIf="!isLoading && invites.length === 0" class="text-center py-4">
+              <p class="text-body-secondary">No invites found for this campaign.</p>
+            </div>
+
+            <table cTable striped *ngIf="!isLoading && invites.length > 0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Organization</th>
+                  <th>Invited By</th>
+                  <th>Status</th>
+                  <th>Expires At</th>
+                  <th>Sent</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let invite of invites">
+                  <td>{{ invite.id }}</td>
+                  <td>{{ invite.organizationName }}</td>
+                  <td>{{ invite.invitedByUserName }}</td>
+                  <td>
+                    <c-badge [color]="getStatusBadgeColor(invite.status)">
+                      {{ getStatusText(invite.status) }}
+                    </c-badge>
+                  </td>
+                  <td>{{ invite.expiresAt | date:'medium' }}</td>
+                  <td>{{ invite.registrationDate | date:'medium' }}</td>
+                  <td class="text-center">
+                    <button
+                      cButton
+                      color="danger"
+                      size="sm"
+                      (click)="cancelInvite(invite.id)"
+                      *ngIf="isPending(invite.status) && canManage"
+                      cTooltip="Cancel Invite"
+                    >
+                      <svg cIcon name="cil-x"></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div *ngIf="!isLoading && pagination && totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <span class="text-body-secondary">
+                  Showing {{ ((currentPage - 1) * pageSize) + 1 }} to
+                  {{ Math.min(currentPage * pageSize, pagination.totalCount) }} of
+                  {{ pagination.totalCount }} entries
+                </span>
+              </div>
+              <c-pagination aria-label="Page navigation">
+                <c-page-item [disabled]="currentPage === 1">
+                  <a cPageLink (click)="changePage(currentPage - 1)">Previous</a>
+                </c-page-item>
+                <c-page-item *ngFor="let page of getPageNumbers()" [active]="page === currentPage">
+                  <a cPageLink (click)="changePage(page)">
+                    {{ page }}
+                  </a>
+                </c-page-item>
+                <c-page-item [disabled]="currentPage === totalPages">
+                  <a cPageLink (click)="changePage(currentPage + 1)">Next</a>
+                </c-page-item>
+              </c-pagination>
+            </div>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

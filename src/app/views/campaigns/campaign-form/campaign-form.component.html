@@ -1,0 +1,257 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="8" xl="6">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-bullhorn" class="me-2"></svg>
+                {{ pageTitle }}
+              </h5>
+              <button
+                cButton
+                color="secondary"
+                routerLink="/campaigns"
+                size="sm"
+              >
+                <svg cIcon name="cil-arrow-left" class="me-1"></svg>
+                Back to List
+              </button>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading campaign...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Form -->
+            <form [formGroup]="campaignForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading || isEditMode">
+              <!-- Title -->
+              <div class="mb-3">
+                <label cLabel for="title">Campaign Title <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-bullhorn"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="title"
+                    formControlName="title"
+                    placeholder="Enter campaign title"
+                    [ngClass]="{
+                      'is-invalid': title?.invalid && title?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="title?.invalid && title?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="title?.errors?.['required']">Campaign title is required</span>
+                  <span *ngIf="title?.errors?.['maxlength']">Title cannot exceed 200 characters</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="mb-3">
+                <label cLabel for="description">Description</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-description"></svg>
+                  </span>
+                  <textarea
+                    cFormControl
+                    id="description"
+                    formControlName="description"
+                    placeholder="Enter campaign description"
+                    rows="3"
+                    [ngClass]="{
+                      'is-invalid': description?.invalid && description?.touched
+                    }"
+                  ></textarea>
+                </c-input-group>
+                <div *ngIf="description?.invalid && description?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="description?.errors?.['maxlength']">Description cannot exceed 1000 characters</span>
+                </div>
+              </div>
+
+              <!-- Target -->
+              <div class="mb-3">
+                <label cLabel for="target">Target Amount <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-dollar"></svg>
+                  </span>
+                  <input
+                    type="number"
+                    cFormControl
+                    id="target"
+                    formControlName="target"
+                    placeholder="Enter target amount"
+                    [ngClass]="{
+                      'is-invalid': target?.invalid && target?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="target?.invalid && target?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="target?.errors?.['required']">Target amount is required</span>
+                  <span *ngIf="target?.errors?.['min']">Target must be at least 1</span>
+                </div>
+              </div>
+
+              <!-- Type -->
+              <div class="mb-3">
+                <label cLabel for="type">Campaign Type <span class="text-danger">*</span></label>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedTypeLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100">
+                    <li *ngFor="let option of typeOptions">
+                      <a cDropdownItem (click)="campaignForm.get('type')?.setValue(option.value); onTypeChange(option.value)">
+                        {{ option.label }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
+                <div *ngIf="type?.invalid && type?.touched" class="invalid-feedback d-block">
+                  <span>Campaign type is required</span>
+                </div>
+              </div>
+
+              <!-- Organization (Solo) -->
+              <div class="mb-3" *ngIf="!isShared">
+                <label cLabel for="organizationId">Organization <span class="text-danger">*</span></label>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedOrganizationLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100">
+                    <li>
+                      <a cDropdownItem (click)="campaignForm.get('organizationId')?.setValue(null)">
+                        Select an organization
+                      </a>
+                    </li>
+                    <li *ngFor="let org of organizations">
+                      <a cDropdownItem (click)="campaignForm.get('organizationId')?.setValue(org.id)">
+                        {{ org.name }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
+                <div *ngIf="organizationId?.invalid && organizationId?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="organizationId?.errors?.['required']">Organization is required</span>
+                </div>
+              </div>
+
+              <!-- Organization IDs (Shared) - Multi-select -->
+              <div class="mb-3" *ngIf="isShared">
+                <label cLabel for="organizationIds">Participating Organizations <span class="text-danger">*</span></label>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedOrganizationIdsLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100" style="max-height: 200px; overflow-y: auto;">
+                    <li *ngFor="let org of organizations">
+                      <a cDropdownItem (click)="toggleOrganizationSelection(org.id)">
+                        <span *ngIf="isOrganizationSelected(org.id)" class="text-primary">
+                          <svg cIcon name="cil-check" class="me-1"></svg>
+                        </span>
+                        {{ org.name }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
+                <div *ngIf="organizationIds?.invalid && organizationIds?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="organizationIds?.errors?.['required']">At least one organization is required</span>
+                </div>
+                <small class="text-muted">Click to select/deselect organizations</small>
+              </div>
+
+              <!-- Creator Organization (Shared) -->
+              <div class="mb-3" *ngIf="isShared">
+                <label cLabel for="organizationId">Creator Organization <span class="text-danger">*</span></label>
+                <c-dropdown>
+                  <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+                    {{ getSelectedCreatorOrganizationLabel() }}
+                  </button>
+                  <ul cDropdownMenu class="w-100">
+                    <li>
+                      <a cDropdownItem (click)="campaignForm.get('organizationId')?.setValue(null)">
+                        Select creator organization
+                      </a>
+                    </li>
+                    <li *ngFor="let org of organizations">
+                      <a cDropdownItem (click)="campaignForm.get('organizationId')?.setValue(org.id)">
+                        {{ org.name }}
+                      </a>
+                    </li>
+                  </ul>
+                </c-dropdown>
+                <div *ngIf="organizationId?.invalid && organizationId?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="organizationId?.errors?.['required']">Creator organization is required</span>
+                </div>
+              </div>
+
+              <!-- Deadline -->
+              <div class="mb-3">
+                <label cLabel for="deadline">Deadline <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-calendar"></svg>
+                  </span>
+                  <input
+                    type="date"
+                    cFormControl
+                    id="deadline"
+                    formControlName="deadline"
+                    [ngClass]="{
+                      'is-invalid': deadline?.invalid && deadline?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="deadline?.invalid && deadline?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="deadline?.errors?.['required']">Deadline is required</span>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-3">
+                <button
+                  cButton
+                  color="primary"
+                  type="submit"
+                  [disabled]="isLoading || campaignForm.invalid"
+                >
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Campaign' : 'Create Campaign') }}
+                </button>
+                <button
+                  cButton
+                  color="secondary"
+                  type="button"
+                  routerLink="/campaigns"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>
