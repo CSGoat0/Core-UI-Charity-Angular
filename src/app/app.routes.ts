@@ -129,22 +129,18 @@ export const routes: Routes = [
     }
   },
   // ==============================
-  // ADMIN & SUPER ADMIN ROUTES (Commented - Will be implemented later)
+  // ADMIN & SUPER ADMIN ROUTES
   // ==============================
 
-  // Protected Admin routes with role guard
-  // Uncomment when admin component is created
-  /*
   {
     path: 'admin',
-    loadComponent: () => import('./views/admin/admin.component').then(m => m.AdminComponent),
+    loadChildren: () => import('./views/admin/routes').then((m) => m.routes),
     canActivate: [AuthGuard, RoleGuard],
     data: {
       roles: ['Admin', 'SuperAdmin'],
       title: 'Admin'
     }
   },
-  */
 
   // Protected SuperAdmin routes with role guard
   // Uncomment when super-admin component is created

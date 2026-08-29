@@ -1,0 +1,227 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="8" xl="6">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-user" class="me-2"></svg>
+                {{ pageTitle }}
+              </h5>
+              <button
+                cButton
+                color="secondary"
+                routerLink="/admin/users"
+                size="sm"
+              >
+                <svg cIcon name="cil-arrow-left" class="me-1"></svg>
+                Back to List
+              </button>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading user...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Form -->
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading || isEditMode">
+
+              <!-- Username -->
+              <div class="mb-3">
+                <label cLabel for="userName">Username <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-user"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="userName"
+                    formControlName="userName"
+                    placeholder="Enter username"
+                    [ngClass]="{
+                      'is-invalid': userName?.invalid && userName?.touched
+                    }"
+                    [disabled]="isEditMode"
+                  />
+                </c-input-group>
+                <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="userName?.errors?.['required']">Username is required</span>
+                  <span *ngIf="userName?.errors?.['minlength']">Username must be at least 3 characters</span>
+                </div>
+                <small *ngIf="isEditMode" class="text-muted">Username cannot be changed</small>
+              </div>
+
+              <!-- Full Name -->
+              <div class="mb-3">
+                <label cLabel for="fullName">Full Name <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-user"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="fullName"
+                    formControlName="fullName"
+                    placeholder="Enter full name"
+                    [ngClass]="{
+                      'is-invalid': fullName?.invalid && fullName?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="fullName?.invalid && fullName?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="fullName?.errors?.['required']">Full name is required</span>
+                  <span *ngIf="fullName?.errors?.['minlength']">Full name must be at least 2 characters</span>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label cLabel for="email">Email <span class="text-danger">*</span></label>
+                <c-input-group>
+                  <span cInputGroupText>@</span>
+                  <input
+                    type="email"
+                    cFormControl
+                    id="email"
+                    formControlName="email"
+                    placeholder="Enter email address"
+                    [ngClass]="{
+                      'is-invalid': email?.invalid && email?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="email?.errors?.['required']">Email is required</span>
+                  <span *ngIf="email?.errors?.['email']">Please enter a valid email address</span>
+                </div>
+              </div>
+
+              <!-- Phone Number -->
+              <div class="mb-3">
+                <label cLabel for="phoneNumber">Phone Number</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-phone"></svg>
+                  </span>
+                  <input
+                    type="tel"
+                    cFormControl
+                    id="phoneNumber"
+                    formControlName="phoneNumber"
+                    placeholder="Enter phone number"
+                  />
+                </c-input-group>
+              </div>
+
+              <!-- Address -->
+              <div class="mb-3">
+                <label cLabel for="address">Address</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-location-pin"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="address"
+                    formControlName="address"
+                    placeholder="Enter address"
+                  />
+                </c-input-group>
+              </div>
+
+              <!-- Password (only for create) -->
+              <div *ngIf="!isEditMode">
+                <div class="mb-3">
+                  <label cLabel for="password">Password <span class="text-danger">*</span></label>
+                  <c-input-group>
+                    <span cInputGroupText>
+                      <svg cIcon name="cil-lock-locked"></svg>
+                    </span>
+                    <input
+                      type="password"
+                      cFormControl
+                      id="password"
+                      formControlName="password"
+                      placeholder="Enter password (min 6 characters)"
+                      [ngClass]="{
+                        'is-invalid': password?.invalid && password?.touched
+                      }"
+                    />
+                  </c-input-group>
+                  <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback d-block">
+                    <span *ngIf="password?.errors?.['required']">Password is required</span>
+                    <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+                  </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-3">
+                  <label cLabel for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                  <c-input-group>
+                    <span cInputGroupText>
+                      <svg cIcon name="cil-lock-locked"></svg>
+                    </span>
+                    <input
+                      type="password"
+                      cFormControl
+                      id="confirmPassword"
+                      formControlName="confirmPassword"
+                      placeholder="Confirm password"
+                      [ngClass]="{
+                        'is-invalid': (confirmPassword?.invalid && confirmPassword?.touched) || userForm.errors?.['passwordMismatch']
+                      }"
+                    />
+                  </c-input-group>
+                  <div *ngIf="(confirmPassword?.invalid && confirmPassword?.touched) || userForm.errors?.['passwordMismatch']" class="invalid-feedback d-block">
+                    <span *ngIf="confirmPassword?.errors?.['required']">Please confirm your password</span>
+                    <span *ngIf="userForm.errors?.['passwordMismatch']">Passwords do not match</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-3">
+                <button
+                  cButton
+                  color="primary"
+                  type="submit"
+                  [disabled]="isLoading || userForm.invalid"
+                >
+                  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {{ isLoading ? 'Saving...' : (isEditMode ? 'Update User' : 'Create User') }}
+                </button>
+                <button
+                  cButton
+                  color="secondary"
+                  type="button"
+                  routerLink="/admin/users"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>

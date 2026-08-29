@@ -1,0 +1,297 @@
+<div class="fade-in">
+  <c-container fluid>
+    <c-row>
+      <c-col lg="12">
+        <c-card>
+          <c-card-header>
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+              <h5 class="mb-0">
+                <svg cIcon name="cil-people" class="me-2"></svg>
+                Users
+              </h5>
+              <div>
+                <button
+                  cButton
+                  color="primary"
+                  routerLink="/admin/users/create"
+                  *ngIf="canManage"
+                >
+                  <svg cIcon name="cil-plus" class="me-1"></svg>
+                  Add User
+                </button>
+              </div>
+            </div>
+          </c-card-header>
+          <c-card-body>
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-body-secondary mt-2">Loading users...</p>
+            </div>
+
+            <!-- Error Message -->
+            <c-alert *ngIf="errorMessage" color="danger" dismissible>
+              {{ errorMessage }}
+            </c-alert>
+
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
+            <!-- Search and Filter -->
+            <div class="row mb-3" *ngIf="!isLoading">
+              <div class="col-md-8">
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-magnifying-glass"></svg>
+                  </span>
+                  <input
+                    cFormControl
+                    type="text"
+                    placeholder="Search users by name, username, or email..."
+                    [(ngModel)]="searchTerm"
+                    (keyup.enter)="searchUsers()"
+                  />
+                  <button cButton color="secondary" (click)="searchUsers()">
+                    Search
+                  </button>
+                  <button cButton color="secondary" (click)="clearSearch()" *ngIf="searchTerm">
+                    Clear
+                  </button>
+                </c-input-group>
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="form-check form-switch d-inline-block me-3">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="includeDeleted"
+                    [checked]="includeDeleted"
+                    (change)="toggleDeleted()"
+                  />
+                  <label class="form-check-label" for="includeDeleted">
+                    Include Deleted
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div *ngIf="!isLoading && users.length === 0" class="text-center py-4">
+              <p class="text-body-secondary">No users found.</p>
+            </div>
+
+            <table cTable striped *ngIf="!isLoading && users.length > 0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Roles</th>
+                  <th>Status</th>
+                  <th>Email</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users">
+                  <td>{{ user.id | slice:0:8 }}...</td>
+                  <td>
+                    <a href="javascript:void(0)" (click)="viewUser(user.id)" class="text-primary">
+                      {{ user.userName }}
+                    </a>
+                  </td>
+                  <td>{{ user.fullName }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span *ngFor="let role of user.roles">
+                      <c-badge color="primary" class="me-1">
+                        {{ role }}
+                      </c-badge>
+                    </span>
+                    <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted">
+                      No roles
+                    </span>
+                  </td>
+                  <td>
+                    <c-badge [color]="getStatusBadgeColor(user.isDeleted)">
+                      {{ getStatusText(user.isDeleted) }}
+                    </c-badge>
+                  </td>
+                  <td>
+                    <c-badge [color]="getEmailConfirmedBadge(user.emailConfirmed)">
+                      {{ getEmailConfirmedText(user.emailConfirmed) }}
+                    </c-badge>
+                  </td>
+                  <td class="text-center">
+                    <!-- View -->
+                    <button
+                      cButton
+                      color="info"
+                      size="sm"
+                      class="me-1"
+                      (click)="viewUser(user.id)"
+                      cTooltip="View"
+                    >
+                      <svg cIcon name="cil-magnifying-glass"></svg>
+                    </button>
+
+                    <!-- Edit -->
+                    <button
+                      cButton
+                      color="warning"
+                      size="sm"
+                      class="me-1"
+                      (click)="editUser(user.id)"
+                      *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)"
+                      cTooltip="Edit"
+                    >
+                      <svg cIcon name="cil-pencil"></svg>
+                    </button>
+
+                    <!-- Manage Roles -->
+                    <button
+                      cButton
+                      color="secondary"
+                      size="sm"
+                      class="me-1"
+                      (click)="openRoleModal(user)"
+                      *ngIf="canManage && !user.isDeleted"
+                      cTooltip="Manage Roles"
+                    >
+                      <svg cIcon name="cil-shield-alt"></svg>
+                    </button>
+
+                    <!-- Restore -->
+                    <button
+                      cButton
+                      color="success"
+                      size="sm"
+                      class="me-1"
+                      (click)="restoreUser(user.id)"
+                      *ngIf="user.isDeleted && canDelete"
+                      cTooltip="Restore"
+                    >
+                      <svg cIcon name="cil-arrow-circle-left"></svg>
+                    </button>
+
+                    <!-- Delete -->
+                    <button
+                      cButton
+                      color="danger"
+                      size="sm"
+                      (click)="deleteUser(user.id)"
+                      *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)"
+                      cTooltip="Delete"
+                    >
+                      <svg cIcon name="cil-trash"></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div *ngIf="!isLoading && pagination && totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <span class="text-body-secondary">
+                  Showing {{ ((currentPage - 1) * pageSize) + 1 }} to
+                  {{ Math.min(currentPage * pageSize, pagination.totalCount) }} of
+                  {{ pagination.totalCount }} entries
+                </span>
+              </div>
+              <c-pagination aria-label="Page navigation">
+                <c-page-item [disabled]="currentPage === 1">
+                  <a cPageLink (click)="changePage(currentPage - 1)">Previous</a>
+                </c-page-item>
+                <c-page-item *ngFor="let page of getPageNumbers()" [active]="page === currentPage">
+                  <a cPageLink (click)="changePage(page)">
+                    {{ page }}
+                  </a>
+                </c-page-item>
+                <c-page-item [disabled]="currentPage === totalPages">
+                  <a cPageLink (click)="changePage(currentPage + 1)">Next</a>
+                </c-page-item>
+              </c-pagination>
+            </div>
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>
+
+<!-- Role Management Modal -->
+<c-modal [visible]="showRoleModal" (visibleChange)="showRoleModal = $event" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle>Manage Roles</h5>
+    <button cButtonClose (click)="showRoleModal = false"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <div *ngIf="selectedUser">
+      <p>
+        <strong>User:</strong> {{ selectedUser.fullName }} ({{ selectedUser.userName }})
+      </p>
+      <p>
+        <strong>Current Roles:</strong>
+        <span *ngFor="let role of selectedUser.roles">
+          <c-badge color="primary" class="me-1">{{ role }}</c-badge>
+        </span>
+        <span *ngIf="!selectedUser.roles || selectedUser.roles.length === 0" class="text-muted">
+          No roles assigned
+        </span>
+      </p>
+      <div class="mb-3">
+        <label class="form-label">Select Role to Assign</label>
+        <select class="form-select" [(ngModel)]="selectedRole">
+          <option value="">Select a role...</option>
+          <option *ngFor="let role of availableRoles" [value]="role">
+            {{ role }}
+          </option>
+        </select>
+        <div class="mt-2">
+          <button
+            cButton
+            color="primary"
+            size="sm"
+            (click)="assignRole()"
+            [disabled]="isAssigningRole || !selectedRole"
+          >
+            <span *ngIf="isAssigningRole" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ isAssigningRole ? 'Assigning...' : 'Assign Role' }}
+          </button>
+        </div>
+      </div>
+      <hr />
+      <div>
+        <h6>Remove Roles</h6>
+        <div *ngFor="let role of selectedUser.roles">
+          <span class="me-2">{{ role }}</span>
+          <button
+            cButton
+            color="danger"
+            size="sm"
+            (click)="removeRole(selectedUser.id, role)"
+            [disabled]="isRemovingRole"
+          >
+            <span *ngIf="isRemovingRole" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Remove
+          </button>
+        </div>
+        <p *ngIf="!selectedUser.roles || selectedUser.roles.length === 0" class="text-muted">
+          No roles to remove.
+        </p>
+      </div>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="showRoleModal = false">
+      Close
+    </button>
+  </c-modal-footer>
+</c-modal>
