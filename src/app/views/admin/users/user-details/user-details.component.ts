@@ -187,6 +187,55 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     return confirmed ? 'Verified' : 'Unverified';
   }
 
+  /**
+   * Check if a role is an organization role
+   */
+  isOrganizationRole(role: string): boolean {
+    return role.includes(':');
+  }
+
+  /**
+   * Get display name for a role
+   */
+  getRoleDisplayName(role: string): string {
+    if (role === 'SuperAdmin') {
+      return 'SuperAdmin';
+    }
+    if (role.includes(': Admin')) {
+      return 'Organization Admin';
+    }
+    if (role.includes(': SubAdmin')) {
+      return 'Organization Sub-Admin';
+    }
+    return role;
+  }
+
+  /**
+   * Get badge color for a role
+   */
+  getRoleBadgeColor(role: string): string {
+    if (role === 'SuperAdmin') {
+      return 'danger';
+    }
+    if (role.includes(': Admin')) {
+      return 'primary';
+    }
+    if (role.includes(': SubAdmin')) {
+      return 'secondary';
+    }
+    return 'info';
+  }
+
+  /**
+   * Get the organization name from an organization role
+   */
+  getOrganizationNameFromRole(role: string): string {
+    if (role.includes(':')) {
+      return role.split(':')[0].trim();
+    }
+    return '';
+  }
+
   get canManage(): boolean {
     return this.authService.isSuperAdmin();
   }

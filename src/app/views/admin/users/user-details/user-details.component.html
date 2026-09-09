@@ -163,9 +163,17 @@
               <div *ngIf="activeTab === 'roles'">
                 <div *ngIf="user.roles && user.roles.length > 0">
                   <h6>Assigned Roles</h6>
-                  <ul>
-                    <li *ngFor="let role of user.roles">
-                      <c-badge color="primary" class="me-1">{{ role }}</c-badge>
+                  <ul class="list-unstyled">
+                    <li *ngFor="let role of user.roles" class="mb-2">
+                      <c-badge [color]="getRoleBadgeColor(role)" class="me-2">
+                        {{ getRoleDisplayName(role) }}
+                      </c-badge>
+                      <span *ngIf="isOrganizationRole(role)" class="text-muted small">
+                        ({{ getOrganizationNameFromRole(role) }})
+                      </span>
+                      <span *ngIf="!isOrganizationRole(role)" class="text-muted small">
+                        (System Role)
+                      </span>
                     </li>
                   </ul>
                 </div>

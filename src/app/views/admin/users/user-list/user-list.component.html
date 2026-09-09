@@ -109,11 +109,11 @@
                   <td>{{ user.fullName }}</td>
                   <td>{{ user.email }}</td>
                   <td>
-                    <span *ngFor="let role of user.roles">
-                      <c-badge color="primary" class="me-1">
-                        {{ role }}
+                    <ng-container *ngFor="let role of user.roles">
+                      <c-badge [color]="getRoleBadgeColor(role)" class="me-1" [title]="role">
+                        {{ getRoleDisplayName(role) }}
                       </c-badge>
-                    </span>
+                    </ng-container>
                     <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted">
                       No roles
                     </span>

@@ -84,8 +84,8 @@ export class UserListComponent implements OnInit, OnDestroy {
   isRemovingRole = false;
   showRoleModal = false;
 
-  // Available roles
-  availableRoles = availableRoles;
+  // Available system roles
+  availableRoles = ['SuperAdmin'];
 
   private timeoutId: any = null;
 
@@ -332,6 +332,66 @@ export class UserListComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // ==============================
+  // Helper Methods
+  // ==============================
+
+  /**
+   * Check if a role is a system role (SuperAdmin)
+   */
+  isSystemRole(role: string): boolean {
+    return role === 'SuperAdmin';
+  }
+
+  /**
+   * Check if a role is an organization role
+   */
+  isOrganizationRole(role: string): boolean {
+    return role.includes(':');
+  }
+
+  /**
+   * Get badge color for a role
+   */
+  getRoleBadgeColor(role: string): string {
+    if (role === 'SuperAdmin') {
+      return 'danger';
+    }
+    if (role.includes(': Admin')) {
+      return 'primary';
+    }
+    if (role.includes(': SubAdmin')) {
+      return 'secondary';
+    }
+    return 'info';
+  }
+
+  /**
+ * Get display name for a role
+ */
+getRoleDisplayName(role: string): string {
+  if (role === 'SuperAdmin') {
+    return 'SuperAdmin';
+  }
+  if (role.includes(': Admin')) {
+    return 'Org Admin';
+  }
+  if (role.includes(': SubAdmin')) {
+    return 'SubAdmin';
+  }
+  return role;
+}
+
+/**
+ * Get the organization name from an organization role
+ */
+getOrganizationNameFromRole(role: string): string {
+  if (role.includes(':')) {
+    return role.split(':')[0].trim();
+  }
+  return '';
+}
 
   getStatusBadgeColor(isDeleted: boolean): string {
     return isDeleted ? 'danger' : 'success';
