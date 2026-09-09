@@ -14,7 +14,7 @@ export const routes: Routes = [
     data: {
       title: 'Home'
     },
-    canActivate: [AuthGuard], // Protect all child routes
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',
@@ -41,6 +41,21 @@ export const routes: Routes = [
           title: 'Campaigns'
         }
       },
+      // ==============================
+      // ADMIN & SUPER ADMIN ROUTES
+      // ==============================
+      {
+        path: 'admin',
+        loadChildren: () => import('./views/admin/routes').then((m) => m.routes),
+        canActivate: [AuthGuard, RoleGuard],
+        data: {
+          roles: ['Admin', 'SuperAdmin'],
+          title: 'Admin'
+        }
+      },
+      // ==============================
+      // DEMO ROUTES
+      // ==============================
       {
         path: 'theme',
         loadChildren: () => import('./views/theme/routes').then((m) => m.routes)
@@ -79,6 +94,9 @@ export const routes: Routes = [
       }
     ]
   },
+  // ==============================
+  // PUBLIC ROUTES
+  // ==============================
   {
     path: 'login',
     loadComponent: () => import('./views/pages/login/login.component').then(m => m.LoginComponent),
@@ -128,37 +146,7 @@ export const routes: Routes = [
       title: 'Page 500'
     }
   },
-  // ==============================
-  // ADMIN & SUPER ADMIN ROUTES (Commented - Will be implemented later)
-  // ==============================
 
-  // Protected Admin routes with role guard
-  // Uncomment when admin component is created
-  /*
-  {
-    path: 'admin',
-    loadComponent: () => import('./views/admin/admin.component').then(m => m.AdminComponent),
-    canActivate: [AuthGuard, RoleGuard],
-    data: {
-      roles: ['Admin', 'SuperAdmin'],
-      title: 'Admin'
-    }
-  },
-  */
-
-  // Protected SuperAdmin routes with role guard
-  // Uncomment when super-admin component is created
-  /*
-  {
-    path: 'super-admin',
-    loadComponent: () => import('./views/super-admin/super-admin.component').then(m => m.SuperAdminComponent),
-    canActivate: [AuthGuard, RoleGuard],
-    data: {
-      roles: ['SuperAdmin'],
-      title: 'Super Admin'
-    }
-  },
-  */
-
+  // Fallback route
   { path: '**', redirectTo: 'dashboard' }
 ];
