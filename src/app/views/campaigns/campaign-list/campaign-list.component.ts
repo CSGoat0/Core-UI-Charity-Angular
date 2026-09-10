@@ -314,7 +314,7 @@ export class CampaignListComponent implements OnInit, OnDestroy {
   }
 
   get canManage(): boolean {
-    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+    return this.authService.isSuperAdmin();
   }
 
   get canDelete(): boolean {

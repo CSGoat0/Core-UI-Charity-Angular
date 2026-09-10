@@ -188,6 +188,6 @@ export class OrganizationFormComponent implements OnInit, OnDestroy {
   get address() { return this.organizationForm.get('address'); }
 
   get canManage(): boolean {
-    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+    return this.authService.isSuperAdmin();
   }
 }

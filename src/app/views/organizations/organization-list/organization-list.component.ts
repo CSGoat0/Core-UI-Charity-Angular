@@ -273,7 +273,7 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
       if (!this.authService.isAuthenticated()) {
         return false;
       }
-      return this.authService.isAdmin() || this.authService.isSuperAdmin();
+      return this.authService.isSuperAdmin();
     } catch (error) {
       console.warn('Error checking canManage:', error);
       return false;

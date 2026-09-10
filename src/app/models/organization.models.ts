@@ -110,6 +110,23 @@ export interface UpdateOrganizationRequest {
   address?: string;
 }
 
+export interface OrganizationAdmin {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userFullName: string;
+}
+
+export interface OrganizationSubAdmin {
+  id: number;
+  organizationId: number;
+  userId: string;
+  role: OrganizationRoleType;
+  userName: string | null;
+  userEmail: string | null;
+  userFullName: string | null;
+}
+
 export interface AssignAdminRequest {
   userId: string;
 }

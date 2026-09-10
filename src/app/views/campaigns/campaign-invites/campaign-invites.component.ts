@@ -284,7 +284,7 @@ export class CampaignInvitesComponent implements OnInit, OnDestroy {
   }
 
   get canManage(): boolean {
-    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+    return this.authService.isSuperAdmin();
   }
 
   getPageNumbers(): number[] {
