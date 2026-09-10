@@ -44,12 +44,6 @@ export const navItems: INavDataExtended[] = [
         url: '/admin/users',
         icon: 'nav-icon-bullet',
         roles: ['SuperAdmin']
-      },
-      {
-        name: 'Roles',
-        url: '/admin/roles',
-        icon: 'nav-icon-bullet',
-        roles: ['SuperAdmin']
       }
     ]
   },

@@ -344,13 +344,6 @@ export class AuthService {
   }
 
   /**
-   * Check if user is Admin
-   */
-  isAdmin(): boolean {
-    return this.hasRole('Admin');
-  }
-
-  /**
    * Check if user is SuperAdmin
    */
   isSuperAdmin(): boolean {

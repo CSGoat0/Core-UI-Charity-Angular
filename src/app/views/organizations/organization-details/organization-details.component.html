@@ -98,6 +98,28 @@
                     Contact Methods
                   </a>
                 </c-nav-item>
+                <c-nav-item>
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'admins'"
+                    (click)="activeTab = 'admins'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-shield-alt" class="me-1"></svg>
+                    Admin Management
+                  </a>
+                </c-nav-item>
+                <c-nav-item *ngIf="canManageSubAdmins">
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'subadmins'"
+                    (click)="activeTab = 'subadmins'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-people" class="me-1"></svg>
+                    Sub-Admins
+                  </a>
+                </c-nav-item>
               </c-nav>
 
               <!-- Details Tab -->
@@ -268,9 +290,220 @@
                 </div>
               </div>
 
+              <!-- Admin Management Tab -->
+              <div *ngIf="activeTab === 'admins'">
+                <!-- Current Admin -->
+                <div class="mb-4">
+                  <h6>Current Organization Admin</h6>
+                  <div *ngIf="adminUser" class="p-3 border rounded bg-light">
+                    <p class="mb-1">
+                      <strong>{{ adminUser.fullName || adminUser.userName }}</strong>
+                    </p>
+                    <p class="mb-1 text-muted small">{{ adminUser.email }}</p>
+                    <p class="mb-0 text-muted small">Username: {{ adminUser.userName }}</p>
+                  </div>
+                  <div *ngIf="!adminUser" class="text-muted">
+                    No admin assigned to this organization.
+                  </div>
+                </div>
+
+                <!-- Admin Actions (SuperAdmin only) -->
+                <div *ngIf="canManageAdmins">
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button
+                      cButton
+                      color="primary"
+                      size="sm"
+                      (click)="openAdminModal()"
+                    >
+                      <svg cIcon name="cil-plus" class="me-1"></svg>
+                      Assign Admin
+                    </button>
+                    <button
+                      cButton
+                      color="warning"
+                      size="sm"
+                      (click)="openTransferModal()"
+                      *ngIf="adminUser"
+                    >
+                      <svg cIcon name="cil-swap" class="me-1"></svg>
+                      Transfer Admin
+                    </button>
+                    <button
+                      cButton
+                      color="danger"
+                      size="sm"
+                      (click)="removeAdmin()"
+                      *ngIf="adminUser"
+                    >
+                      <svg cIcon name="cil-trash" class="me-1"></svg>
+                      Remove Admin
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sub-Admins Tab -->
+              <div *ngIf="activeTab === 'subadmins'">
+                <!-- Sub-Admins List -->
+                <div class="mb-4">
+                  <h6>Sub-Admins</h6>
+                  <div *ngIf="subAdmins && subAdmins.length > 0">
+                    <div *ngFor="let subAdmin of subAdmins" class="p-3 border rounded bg-light mb-2">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong>{{ subAdmin.userFullName || subAdmin.userName }}</strong>
+                          <span class="text-muted ms-2">{{ subAdmin.userEmail }}</span>
+                        </div>
+                        <button
+                          cButton
+                          color="danger"
+                          size="sm"
+                          (click)="removeSubAdmin(subAdmin.userId)"
+                          *ngIf="canManageSubAdmins"
+                        >
+                          <svg cIcon name="cil-trash"></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="!subAdmins || subAdmins.length === 0" class="text-muted">
+                    No sub-admins assigned to this organization.
+                  </div>
+                </div>
+
+                <!-- Add Sub-Admin (SuperAdmin + OrganizationAdmin only) -->
+                <div *ngIf="canManageSubAdmins">
+                  <button
+                    cButton
+                    color="primary"
+                    size="sm"
+                    (click)="openSubAdminModal()"
+                  >
+                    <svg cIcon name="cil-plus" class="me-1"></svg>
+                    Add Sub-Admin
+                  </button>
+                </div>
+              </div>
+
             </ng-container>
           </c-card-body>
         </c-card>
+
+        <!-- Assign Admin Modal -->
+        <c-modal [visible]="showAdminModal" (visibleChange)="showAdminModal = $event" alignment="center" size="lg">
+          <c-modal-header>
+            <h5 cModalTitle>Assign Organization Admin</h5>
+            <button cButtonClose (click)="showAdminModal = false"></button>
+          </c-modal-header>
+          <c-modal-body>
+            <p>Select a user to assign as admin for <strong>{{ organization?.name }}</strong></p>
+            <div class="mb-3">
+              <label class="form-label">User</label>
+              <select class="form-select" [(ngModel)]="selectedUser">
+                <option value="">Select a user...</option>
+                <option *ngFor="let user of users" [value]="user.id">
+                  {{ user.fullName || user.userName }} ({{ user.email }})
+                </option>
+              </select>
+            </div>
+            <div *ngIf="isLoadingUsers" class="text-center">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="ms-2">Loading users...</span>
+            </div>
+          </c-modal-body>
+          <c-modal-footer>
+            <button cButton color="secondary" (click)="showAdminModal = false">Cancel</button>
+            <button
+              cButton
+              color="primary"
+              (click)="assignAdmin()"
+              [disabled]="isAssigningAdmin || !selectedUser"
+            >
+              <span *ngIf="isAssigningAdmin" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {{ isAssigningAdmin ? 'Assigning...' : 'Assign Admin' }}
+            </button>
+          </c-modal-footer>
+        </c-modal>
+
+        <!-- Transfer Admin Modal -->
+        <c-modal [visible]="showTransferModal" (visibleChange)="showTransferModal = $event" alignment="center" size="lg">
+          <c-modal-header>
+            <h5 cModalTitle>Transfer Organization Admin</h5>
+            <button cButtonClose (click)="showTransferModal = false"></button>
+          </c-modal-header>
+          <c-modal-body>
+            <p>Transfer admin role from <strong>{{ adminUser?.fullName || adminUser?.userName }}</strong> to another user for <strong>{{ organization?.name }}</strong></p>
+            <div class="mb-3">
+              <label class="form-label">New Admin User</label>
+              <select class="form-select" [(ngModel)]="transferUserId">
+                <option value="">Select a user...</option>
+                <option *ngFor="let user of users" [value]="user.id" [disabled]="user.id === adminUser?.id">
+                  {{ user.fullName || user.userName }} ({{ user.email }})
+                  <span *ngIf="user.id === adminUser?.id" class="text-muted">(Current Admin)</span>
+                </option>
+              </select>
+            </div>
+            <div *ngIf="isLoadingUsers" class="text-center">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="ms-2">Loading users...</span>
+            </div>
+          </c-modal-body>
+          <c-modal-footer>
+            <button cButton color="secondary" (click)="showTransferModal = false">Cancel</button>
+            <button
+              cButton
+              color="warning"
+              (click)="transferAdmin()"
+              [disabled]="isTransferringAdmin || !transferUserId"
+            >
+              <span *ngIf="isTransferringAdmin" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {{ isTransferringAdmin ? 'Transferring...' : 'Transfer Admin' }}
+            </button>
+          </c-modal-footer>
+        </c-modal>
+
+        <!-- Add Sub-Admin Modal -->
+        <c-modal [visible]="showSubAdminModal" (visibleChange)="showSubAdminModal = $event" alignment="center" size="lg">
+          <c-modal-header>
+            <h5 cModalTitle>Add Sub-Admin</h5>
+            <button cButtonClose (click)="showSubAdminModal = false"></button>
+          </c-modal-header>
+          <c-modal-body>
+            <p>Select a user to add as sub-admin for <strong>{{ organization?.name }}</strong></p>
+            <div class="mb-3">
+              <label class="form-label">User</label>
+              <select class="form-select" [(ngModel)]="selectedSubAdminUser">
+                <option value="">Select a user...</option>
+                <option *ngFor="let user of users" [value]="user.id">
+                  {{ user.fullName || user.userName }} ({{ user.email }})
+                </option>
+              </select>
+            </div>
+            <div *ngIf="isLoadingUsers" class="text-center">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="ms-2">Loading users...</span>
+            </div>
+          </c-modal-body>
+          <c-modal-footer>
+            <button cButton color="secondary" (click)="showSubAdminModal = false">Cancel</button>
+            <button
+              cButton
+              color="primary"
+              (click)="addSubAdmin()"
+              [disabled]="isAddingSubAdmin || !selectedSubAdminUser"
+            >
+              <span *ngIf="isAddingSubAdmin" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              {{ isAddingSubAdmin ? 'Adding...' : 'Add Sub-Admin' }}
+            </button>
+          </c-modal-footer>
+        </c-modal>
       </c-col>
     </c-row>
   </c-container>

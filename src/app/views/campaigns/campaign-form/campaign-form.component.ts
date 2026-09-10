@@ -341,6 +341,6 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
   get organizationIds() { return this.campaignForm.get('organizationIds'); }
 
   get canManage(): boolean {
-    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+    return this.authService.isSuperAdmin();
   }
 }
