@@ -62,17 +62,11 @@ export const navItems: INavDataExtended[] = [
     url: '/campaigns',
     iconComponent: { name: 'cil-bullhorn' }
   },
-  /*
   {
-    title: true,
-    name: 'Features'
-  },
-  {
-    name: 'Donations',
-    url: '/donations',
+    name: 'My Donations',
+    url: '/my-donations',
     iconComponent: { name: 'cil-heart' }
   },
-  */
 
   // ==============================
   // THEME SECTION - Demo items (keep for now, remove later)

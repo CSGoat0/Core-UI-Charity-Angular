@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   ButtonDirective,
@@ -17,8 +17,11 @@ import {
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
+import { DonationService } from '../../../services/donation.service';
 import { AuthService } from '../../../services/auth.service';
-import { CampaignDetails, CampaignStatus, CampaignType, isSharedCampaign, isSoloCampaign } from '../../../models/campaign.models';
+import { CampaignDetails, CampaignStatus, isSharedCampaign, isSoloCampaign } from '../../../models/campaign.models';
+import { Donation } from '../../../models/donation.models';
+import { DonateModalComponent } from '../../donations/donate-modal/donate-modal.component';
 
 @Component({
   selector: 'app-campaign-details',
@@ -37,7 +40,8 @@ import { CampaignDetails, CampaignStatus, CampaignType, isSharedCampaign, isSolo
     IconDirective,
     NavComponent,
     NavItemComponent,
-    NavLinkDirective
+    NavLinkDirective,
+    DonateModalComponent
   ]
 })
 export class CampaignDetailsComponent implements OnInit, OnDestroy {
@@ -45,11 +49,20 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage: string | null = null;
   activeTab: string = 'details';
+  showDonateModal = false;
+  donationSuccessMessage: string | null = null;
+
+  // Donations
+  campaignDonations: Donation[] = [];
+  isLoadingDonations = false;
+  donationsLoaded = false;
+  totalDonationsCount = 0;
 
   private timeoutId: any = null;
 
   constructor(
     private campaignService: CampaignService,
+    private donationService: DonationService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -84,7 +97,11 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
 
         if (response.success && response.data) {
           this.campaign = response.data;
-          // For shared campaigns, fetch organizations separately if needed
+
+          // Load lightweight donation count
+          this.loadDonationCount(id);
+
+          // For shared campaigns, fetch organizations
           if (isSharedCampaign(this.campaign.type)) {
             this.loadSharedCampaignOrganizations(id);
           }
@@ -121,6 +138,69 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ==============================
+  // Donations Loading
+  // ==============================
+
+  /**
+   * Load lightweight donation count (called on page load)
+   */
+  loadDonationCount(campaignId: number): void {
+    this.donationService.getDonationCountByCampaign(campaignId).subscribe({
+      next: (response) => {
+        if (response.success && response.data !== undefined) {
+          this.totalDonationsCount = response.data;
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        console.error('Load donation count error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /**
+   * Load actual donations (called when Donations tab is clicked)
+   */
+  loadCampaignDonations(): void {
+    if (!this.campaign || this.donationsLoaded) return;
+
+    this.isLoadingDonations = true;
+    this.cdr.detectChanges();
+
+    const params = { pageNumber: 1, pageSize: 50 };
+
+    this.donationService.getDonationsByCampaign(params, this.campaign.id).subscribe({
+      next: (response) => {
+        this.isLoadingDonations = false;
+        this.donationsLoaded = true;
+        this.cdr.detectChanges();
+
+        if (response.success && response.data) {
+          this.campaignDonations = response.data.items;
+          this.totalDonationsCount = response.data.totalCount;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingDonations = false;
+        this.donationsLoaded = true;
+        this.cdr.detectChanges();
+        console.error('Load campaign donations error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onTabChange(tab: string): void {
+    this.activeTab = tab;
+    if (tab === 'donations') {
+      this.loadCampaignDonations();
+    }
+    this.cdr.detectChanges();
+  }
+
   goBack(): void {
     this.router.navigate(['/campaigns']);
   }
@@ -135,6 +215,39 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
     if (this.campaign && isSharedCampaign(this.campaign.type)) {
       this.router.navigate(['/campaigns', this.campaign.id, 'invites']);
     }
+  }
+
+  openDonateModal(): void {
+    if (!this.campaign) return;
+
+    if (!this.campaign.organizationId || this.campaign.organizationId === 0) {
+      this.errorMessage = 'This campaign is not associated with an organization. Donations are not available.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.showDonateModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onDonationSuccess(): void {
+    this.donationSuccessMessage = 'Thank you for your donation!';
+    this.showDonateModal = false;
+
+    // Reset donations so they reload on next tab visit
+    this.donationsLoaded = false;
+    this.campaignDonations = [];
+
+    // Refresh the count
+    if (this.campaign) {
+      this.loadDonationCount(this.campaign.id);
+    }
+
+    this.timeoutId = setTimeout(() => {
+      this.donationSuccessMessage = null;
+      this.cdr.detectChanges();
+    }, 5000);
+    this.cdr.detectChanges();
   }
 
   getStatusBadgeColor(status: CampaignStatus): string {

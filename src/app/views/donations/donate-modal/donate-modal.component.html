@@ -1,0 +1,99 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" alignment="center">
+  <c-modal-header>
+    <h5 cModalTitle>Donate to Campaign</h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+    <div *ngIf="campaignTitle" class="mb-3">
+      <p class="mb-1"><strong>Campaign:</strong></p>
+      <p class="text-body-secondary">{{ campaignTitle }}</p>
+    </div>
+
+    <!-- Error Alert -->
+    <c-alert *ngIf="errorMessage" color="danger" dismissible>
+      {{ errorMessage }}
+    </c-alert>
+
+    <!-- Amount Input -->
+    <div class="mb-3">
+      <label class="form-label">Donation Amount (EGP) <span class="text-danger">*</span></label>
+      <c-input-group>
+        <span cInputGroupText>
+          <svg cIcon name="cil-dollar"></svg>
+        </span>
+        <input
+          type="number"
+          cFormControl
+          [(ngModel)]="amount"
+          placeholder="Enter amount"
+          min="1"
+          step="1"
+        />
+      </c-input-group>
+      <small class="text-muted">Minimum amount: 1 EGP</small>
+    </div>
+
+    <!-- Quick Amount Buttons -->
+    <div class="mb-3">
+      <label class="form-label">Quick Select</label>
+      <div class="d-flex gap-2 flex-wrap">
+        <button
+          cButton
+          color="secondary"
+          size="sm"
+          (click)="amount = 50"
+          [active]="amount === 50"
+        >
+          50
+        </button>
+        <button
+          cButton
+          color="secondary"
+          size="sm"
+          (click)="amount = 100"
+          [active]="amount === 100"
+        >
+          100
+        </button>
+        <button
+          cButton
+          color="secondary"
+          size="sm"
+          (click)="amount = 500"
+          [active]="amount === 500"
+        >
+          500
+        </button>
+        <button
+          cButton
+          color="secondary"
+          size="sm"
+          (click)="amount = 1000"
+          [active]="amount === 1000"
+        >
+          1000
+        </button>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="alert alert-info small">
+      <svg cIcon name="cil-info" class="me-1"></svg>
+      You will be redirected to a secure payment page to complete your donation.
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="close()" [disabled]="isLoading">
+      Cancel
+    </button>
+    <button
+      cButton
+      color="success"
+      (click)="donate()"
+      [disabled]="isLoading || !amount || amount < 1"
+    >
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      {{ isLoading ? 'Processing...' : 'Donate ' + (amount || 0) + ' EGP' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

@@ -41,6 +41,13 @@ export const routes: Routes = [
           title: 'Campaigns'
         }
       },
+      {
+        path: 'my-donations',
+        loadComponent: () => import('./views/my-donations/my-donations.component').then(m => m.MyDonationsComponent),
+        data: {
+          title: 'My Donations'
+        }
+      },
       // ==============================
       // ADMIN & SUPER ADMIN ROUTES
       // ==============================
@@ -130,6 +137,13 @@ export const routes: Routes = [
     loadComponent: () => import('./views/pages/confirm-email/confirm-email.component').then(m => m.ConfirmEmailComponent),
     data: {
       title: 'Confirm Email'
+    }
+  },
+  {
+    path: 'payment-callback',
+    loadComponent: () => import('./views/pages/payment-callback/payment-callback.component').then(m => m.PaymentCallbackComponent),
+    data: {
+      title: 'Payment Callback'
     }
   },
   {
