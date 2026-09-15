@@ -25,9 +25,12 @@ import { IconDirective } from '@coreui/icons-angular';
 import { OrganizationService } from '../../../services/organization.service';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
+import { DonationService } from '../../../services/donation.service';
 import { OrganizationDetails, OrganizationSubAdmin, CampaignStatus } from '../../../models/organization.models';
+import { PaymentInfo } from '../../../models/donation.models';
 import { User } from '../../../models/user.models';
 import { UserDto } from '../../../models/auth.models';
+import { PaymentInfoFormComponent } from '../payment-info/payment-info-form/payment-info-form.component';
 
 @Component({
   selector: 'app-organization-details',
@@ -52,7 +55,8 @@ import { UserDto } from '../../../models/auth.models';
     ModalBodyComponent,
     ModalFooterComponent,
     ModalHeaderComponent,
-    TooltipDirective
+    TooltipDirective,
+    PaymentInfoFormComponent
   ]
 })
 export class OrganizationDetailsComponent implements OnInit, OnDestroy {
@@ -81,12 +85,19 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
   isRemovingSubAdmin = false;
   subAdmins: OrganizationSubAdmin[] = [];
 
+  // Payment Info Management
+  paymentInfo: PaymentInfo | null = null;
+  hasPaymentInfo = false;
+  isLoadingPaymentInfo = false;
+  showPaymentInfoModal = false;
+
   private timeoutId: any = null;
 
   constructor(
     private organizationService: OrganizationService,
     private userService: UserService,
     private authService: AuthService,
+    private donationService: DonationService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -122,6 +133,7 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
           this.organization = response.data;
           this.loadAdminInfo();
           this.loadSubAdmins();
+          this.loadPaymentInfo();
         } else {
           this.errorMessage = response.message || 'Failed to load organization details.';
         }
@@ -214,6 +226,90 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
         this.isLoadingUsers = false;
         this.cdr.detectChanges();
         console.error('Load users error:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ==============================
+  // Payment Info Methods
+  // ==============================
+
+  loadPaymentInfo(): void {
+    if (!this.organization) return;
+
+    this.isLoadingPaymentInfo = true;
+    this.cdr.detectChanges();
+
+    this.donationService.getPaymentInfoByOrganizationId(this.organization.id).subscribe({
+      next: (response) => {
+        this.isLoadingPaymentInfo = false;
+        this.cdr.detectChanges();
+
+        if (response.success && response.data) {
+          this.paymentInfo = response.data;
+          this.hasPaymentInfo = true;
+        } else {
+          this.paymentInfo = null;
+          this.hasPaymentInfo = false;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingPaymentInfo = false;
+        this.paymentInfo = null;
+        this.hasPaymentInfo = false;
+        this.cdr.detectChanges();
+        console.error('Load payment info error:', error);
+      }
+    });
+  }
+
+  openPaymentInfoModal(): void {
+    this.showPaymentInfoModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onPaymentInfoSaved(): void {
+    this.successMessage = 'Payment info saved successfully!';
+    this.loadPaymentInfo();
+
+    this.timeoutId = setTimeout(() => {
+      this.successMessage = null;
+      this.cdr.detectChanges();
+    }, 3000);
+  }
+
+  deletePaymentInfo(): void {
+    if (!this.paymentInfo) return;
+    if (!confirm('Are you sure you want to delete this payment info? The organization will not be able to receive donations until new credentials are added.')) return;
+
+    this.isLoadingPaymentInfo = true;
+    this.cdr.detectChanges();
+
+    this.donationService.deletePaymentInfo(this.paymentInfo.id).subscribe({
+      next: (response) => {
+        this.isLoadingPaymentInfo = false;
+        this.cdr.detectChanges();
+
+        if (response.success) {
+          this.successMessage = 'Payment info deleted successfully.';
+          this.paymentInfo = null;
+          this.hasPaymentInfo = false;
+
+          this.timeoutId = setTimeout(() => {
+            this.successMessage = null;
+            this.cdr.detectChanges();
+          }, 3000);
+        } else {
+          this.errorMessage = response.message || 'Failed to delete payment info.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingPaymentInfo = false;
+        this.cdr.detectChanges();
+        this.errorMessage = error.message || 'An error occurred.';
         this.cdr.detectChanges();
       }
     });
@@ -518,6 +614,10 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
   }
 
   get canViewAdminInfo(): boolean {
+    return this.isSuperAdmin || this.isOrganizationAdmin;
+  }
+
+  get canManagePaymentInfo(): boolean {
     return this.isSuperAdmin || this.isOrganizationAdmin;
   }
 
