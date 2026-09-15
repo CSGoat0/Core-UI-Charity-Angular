@@ -12,5 +12,12 @@ export const routes: Routes = [
     data: {
       title: 'Users'
     }
+  },
+  {
+    path: 'donations',
+    loadChildren: () => import('./donations/routes').then((m) => m.routes),
+    data: {
+      title: 'Donations'
+    }
   }
 ];
