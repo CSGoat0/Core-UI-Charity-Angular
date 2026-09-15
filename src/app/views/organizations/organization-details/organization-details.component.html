@@ -50,6 +50,11 @@
               {{ errorMessage }}
             </c-alert>
 
+            <!-- Success Message -->
+            <c-alert *ngIf="successMessage" color="success" dismissible>
+              {{ successMessage }}
+            </c-alert>
+
             <!-- Organization Details -->
             <ng-container *ngIf="!isLoading && organization">
 
@@ -118,6 +123,17 @@
                   >
                     <svg cIcon name="cil-people" class="me-1"></svg>
                     Sub-Admins
+                  </a>
+                </c-nav-item>
+                <c-nav-item *ngIf="canManagePaymentInfo">
+                  <a
+                    cNavLink
+                    [active]="activeTab === 'payment-info'"
+                    (click)="activeTab = 'payment-info'"
+                    style="cursor: pointer;"
+                  >
+                    <svg cIcon name="cil-credit-card" class="me-1"></svg>
+                    Payment Info
                   </a>
                 </c-nav-item>
               </c-nav>
@@ -386,6 +402,84 @@
                 </div>
               </div>
 
+              <!-- Payment Info Tab -->
+              <div *ngIf="activeTab === 'payment-info'">
+
+                <!-- Loading State -->
+                <div *ngIf="isLoadingPaymentInfo" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="text-body-secondary mt-2">Loading payment info...</p>
+                </div>
+
+                <!-- Payment Info Content -->
+                <ng-container *ngIf="!isLoadingPaymentInfo">
+
+                  <!-- Has Payment Info -->
+                  <div *ngIf="hasPaymentInfo && paymentInfo">
+                    <c-alert color="success" dismissible>
+                      <svg cIcon name="cil-check-circle" class="me-1"></svg>
+                      <strong>Payment information is configured.</strong>
+                      This organization can receive donations.
+                    </c-alert>
+
+                    <c-row>
+                      <c-col md="6" class="mb-2">
+                        <strong>Payment Info ID:</strong> {{ paymentInfo.id }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Integration ID:</strong> {{ paymentInfo.integrationId }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>iFrame ID:</strong> {{ paymentInfo.iframeId }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Registered:</strong> {{ paymentInfo.registrationDate | date:'medium' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Last Updated:</strong> {{ paymentInfo.updatedOn ? (paymentInfo.updatedOn | date:'medium') : 'Never' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>API Key:</strong>
+                        <code class="text-muted">{{ paymentInfo.apiKey | slice:0:10 }}...</code>
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>HMAC Key:</strong>
+                        <code class="text-muted">{{ paymentInfo.hmacKey | slice:0:10 }}...</code>
+                      </c-col>
+                    </c-row>
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 mt-3">
+                      <button cButton color="warning" size="sm" (click)="openPaymentInfoModal()">
+                        <svg cIcon name="cil-pencil" class="me-1"></svg>
+                        Edit Payment Info
+                      </button>
+                      <button cButton color="danger" size="sm" (click)="deletePaymentInfo()" *ngIf="isSuperAdmin">
+                        <svg cIcon name="cil-trash" class="me-1"></svg>
+                        Delete Payment Info
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- No Payment Info -->
+                  <div *ngIf="!hasPaymentInfo">
+                    <div class="alert alert-warning">
+                      <svg cIcon name="cil-warning" class="me-1"></svg>
+                      <strong>No payment information configured.</strong>
+                      This organization cannot receive donations until payment info is added.
+                    </div>
+
+                    <button cButton color="primary" (click)="openPaymentInfoModal()">
+                      <svg cIcon name="cil-plus" class="me-1"></svg>
+                      Add Payment Info
+                    </button>
+                  </div>
+
+                </ng-container>
+              </div>
+
             </ng-container>
           </c-card-body>
         </c-card>
@@ -504,6 +598,16 @@
             </button>
           </c-modal-footer>
         </c-modal>
+
+        <!-- Payment Info Modal -->
+        <app-payment-info-form
+          [visible]="showPaymentInfoModal"
+          [organizationId]="organization?.id || null"
+          [organizationName]="organization?.name || ''"
+          [existingPaymentInfo]="paymentInfo"
+          (visibleChange)="showPaymentInfoModal = $event"
+          (saved)="onPaymentInfoSaved()"
+        ></app-payment-info-form>
       </c-col>
     </c-row>
   </c-container>

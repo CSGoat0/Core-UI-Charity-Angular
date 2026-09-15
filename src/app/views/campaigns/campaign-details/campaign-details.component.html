@@ -24,6 +24,16 @@
                 </button>
                 <button
                   cButton
+                  color="success"
+                  size="sm"
+                  (click)="openDonateModal()"
+                  *ngIf="campaign && !campaign.isDeleted"
+                >
+                  <svg cIcon name="cil-heart" class="me-1"></svg>
+                  Donate
+                </button>
+                <button
+                  cButton
                   color="info"
                   size="sm"
                   (click)="manageInvites()"
@@ -60,6 +70,11 @@
               {{ errorMessage }}
             </c-alert>
 
+            <!-- Success Message -->
+            <c-alert *ngIf="donationSuccessMessage" color="success" dismissible>
+              {{ donationSuccessMessage }}
+            </c-alert>
+
             <!-- Campaign Details -->
             <ng-container *ngIf="!isLoading && campaign">
 
@@ -82,7 +97,7 @@
                   <a
                     cNavLink
                     [active]="activeTab === 'details'"
-                    (click)="activeTab = 'details'"
+                    (click)="onTabChange('details')"
                     style="cursor: pointer;"
                   >
                     <svg cIcon name="cil-info" class="me-1"></svg>
@@ -93,18 +108,18 @@
                   <a
                     cNavLink
                     [active]="activeTab === 'donations'"
-                    (click)="activeTab = 'donations'"
+                    (click)="onTabChange('donations')"
                     style="cursor: pointer;"
                   >
                     <svg cIcon name="cil-heart" class="me-1"></svg>
-                    Donations ({{ campaign.totalDonationsCount || 0 }})
+                    Donations ({{ totalDonationsCount }})
                   </a>
                 </c-nav-item>
                 <c-nav-item *ngIf="isShared">
                   <a
                     cNavLink
                     [active]="activeTab === 'organizations'"
-                    (click)="activeTab = 'organizations'"
+                    (click)="onTabChange('organizations')"
                     style="cursor: pointer;"
                   >
                     <svg cIcon name="cil-building" class="me-1"></svg>
@@ -191,9 +206,19 @@
 
               <!-- Donations Tab -->
               <div *ngIf="activeTab === 'donations'">
-                <div *ngIf="campaign.recentDonations && campaign.recentDonations.length > 0">
+
+                <!-- Loading State -->
+                <div *ngIf="isLoadingDonations" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="text-body-secondary mt-2">Loading donations...</p>
+                </div>
+
+                <!-- Donations Table -->
+                <div *ngIf="!isLoadingDonations && campaignDonations.length > 0">
                   <div class="mb-3">
-                    <h6>Recent Donations</h6>
+                    <h6>Donations ({{ totalDonationsCount }})</h6>
                     <table class="table table-striped">
                       <thead>
                         <tr>
@@ -204,17 +229,19 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let donation of campaign.recentDonations">
+                        <tr *ngFor="let donation of campaignDonations">
                           <td>{{ donation.id }}</td>
                           <td>{{ donation.amount | currency }}</td>
-                          <td>{{ donation.userName || 'Anonymous' }}</td>
+                          <td>{{ donation.userId || 'Anonymous' }}</td>
                           <td>{{ donation.registrationDate | date:'medium' }}</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div *ngIf="!campaign.recentDonations || campaign.recentDonations.length === 0" class="text-center py-3">
+
+                <!-- No Donations -->
+                <div *ngIf="!isLoadingDonations && campaignDonations.length === 0" class="text-center py-3">
                   <p class="text-body-secondary">No donations yet for this campaign.</p>
                 </div>
               </div>
@@ -258,6 +285,16 @@
             </ng-container>
           </c-card-body>
         </c-card>
+
+        <!-- Donate Modal -->
+        <app-donate-modal
+          [visible]="showDonateModal"
+          [campaignId]="campaign?.id || null"
+          [campaignTitle]="campaign?.title || ''"
+          [organizationId]="campaign?.organizationId || null"
+          (visibleChange)="showDonateModal = $event"
+          (donationSuccess)="onDonationSuccess()"
+        ></app-donate-modal>
       </c-col>
     </c-row>
   </c-container>

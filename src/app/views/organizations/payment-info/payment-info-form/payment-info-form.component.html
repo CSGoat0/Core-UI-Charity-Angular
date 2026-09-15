@@ -1,0 +1,140 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" alignment="center" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>
+      {{ isEditMode ? 'Edit Payment Info' : 'Add Payment Info' }}
+    </h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+
+    <div *ngIf="organizationName" class="mb-3">
+      <p class="mb-1"><strong>Organization:</strong></p>
+      <p class="text-body-secondary">{{ organizationName }}</p>
+    </div>
+
+    <div class="alert alert-info small">
+      <svg cIcon name="cil-info" class="me-1"></svg>
+      These credentials are used to connect this organization's campaigns to Paymob for donations.
+    </div>
+
+    <!-- Error Message -->
+    <c-alert *ngIf="errorMessage" color="danger" dismissible>
+      {{ errorMessage }}
+    </c-alert>
+
+    <form [formGroup]="paymentInfoForm" (ngSubmit)="onSubmit()">
+
+      <!-- API Key -->
+      <div class="mb-3">
+        <label cLabel for="apiKey">Paymob API Key <span class="text-danger">*</span></label>
+        <c-input-group>
+          <span cInputGroupText>
+            <svg cIcon name="cil-key"></svg>
+          </span>
+          <input
+            type="text"
+            cFormControl
+            id="apiKey"
+            formControlName="apiKey"
+            placeholder="Enter Paymob API Key"
+            [ngClass]="{
+              'is-invalid': apiKey?.invalid && apiKey?.touched
+            }"
+          />
+        </c-input-group>
+        <div *ngIf="apiKey?.invalid && apiKey?.touched" class="invalid-feedback d-block">
+          <span *ngIf="apiKey?.errors?.['required']">API Key is required</span>
+          <span *ngIf="apiKey?.errors?.['maxlength']">API Key cannot exceed 300 characters</span>
+        </div>
+      </div>
+
+      <!-- Integration ID -->
+      <div class="mb-3">
+        <label cLabel for="integrationId">Integration ID <span class="text-danger">*</span></label>
+        <c-input-group>
+          <span cInputGroupText>
+            <svg cIcon name="cil-link"></svg>
+          </span>
+          <input
+            type="text"
+            cFormControl
+            id="integrationId"
+            formControlName="integrationId"
+            placeholder="Enter Paymob Integration ID"
+            [ngClass]="{
+              'is-invalid': integrationId?.invalid && integrationId?.touched
+            }"
+          />
+        </c-input-group>
+        <div *ngIf="integrationId?.invalid && integrationId?.touched" class="invalid-feedback d-block">
+          <span *ngIf="integrationId?.errors?.['required']">Integration ID is required</span>
+          <span *ngIf="integrationId?.errors?.['maxlength']">Integration ID cannot exceed 300 characters</span>
+        </div>
+      </div>
+
+      <!-- iFrame ID -->
+      <div class="mb-3">
+        <label cLabel for="iframeId">iFrame ID <span class="text-danger">*</span></label>
+        <c-input-group>
+          <span cInputGroupText>
+            <svg cIcon name="cil-window"></svg>
+          </span>
+          <input
+            type="text"
+            cFormControl
+            id="iframeId"
+            formControlName="iframeId"
+            placeholder="Enter Paymob iFrame ID"
+            [ngClass]="{
+              'is-invalid': iframeId?.invalid && iframeId?.touched
+            }"
+          />
+        </c-input-group>
+        <div *ngIf="iframeId?.invalid && iframeId?.touched" class="invalid-feedback d-block">
+          <span *ngIf="iframeId?.errors?.['required']">iFrame ID is required</span>
+          <span *ngIf="iframeId?.errors?.['maxlength']">iFrame ID cannot exceed 300 characters</span>
+        </div>
+      </div>
+
+      <!-- HMAC Key -->
+      <div class="mb-3">
+        <label cLabel for="hmacKey">HMAC Secret Key <span class="text-danger">*</span></label>
+        <c-input-group>
+          <span cInputGroupText>
+            <svg cIcon name="cil-lock-locked"></svg>
+          </span>
+          <input
+            type="text"
+            cFormControl
+            id="hmacKey"
+            formControlName="hmacKey"
+            placeholder="Enter Paymob HMAC Secret"
+            [ngClass]="{
+              'is-invalid': hmacKey?.invalid && hmacKey?.touched
+            }"
+          />
+        </c-input-group>
+        <div *ngIf="hmacKey?.invalid && hmacKey?.touched" class="invalid-feedback d-block">
+          <span *ngIf="hmacKey?.errors?.['required']">HMAC Key is required</span>
+          <span *ngIf="hmacKey?.errors?.['maxlength']">HMAC Key cannot exceed 300 characters</span>
+        </div>
+        <small class="text-muted">Used to verify Paymob callbacks (webhooks)</small>
+      </div>
+
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="close()" [disabled]="isLoading">
+      Cancel
+    </button>
+    <button
+      cButton
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="isLoading || paymentInfoForm.invalid"
+    >
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Payment Info' : 'Save Payment Info') }}
+    </button>
+  </c-modal-footer>
+</c-modal>

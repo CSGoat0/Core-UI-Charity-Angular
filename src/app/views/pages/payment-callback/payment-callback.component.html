@@ -1,0 +1,62 @@
+<div class="bg-light dark:bg-transparent min-vh-100 d-flex flex-row align-items-center">
+  <c-container>
+    <c-row class="justify-content-center">
+      <c-col lg="6" md="8">
+        <c-card class="mx-4">
+          <c-card-body class="p-5 text-center">
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading">
+              <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <h4>Processing your payment...</h4>
+              <p class="text-body-secondary">Please wait while we verify your transaction.</p>
+            </div>
+
+            <!-- Success State -->
+            <div *ngIf="!isLoading && isSuccess">
+              <svg cIcon name="cil-check-circle" size="4xl" class="text-success mb-3"></svg>
+              <h2 class="text-success mb-3">Thank You!</h2>
+              <p class="text-body-secondary mb-4">
+                Your donation has been received successfully. We truly appreciate your generosity!
+              </p>
+              <div *ngIf="transactionId" class="small text-muted mb-3">
+                Transaction ID: {{ transactionId }}
+              </div>
+              <div class="d-flex gap-2 justify-content-center">
+                <button cButton color="primary" (click)="goToMyDonations()">
+                  <svg cIcon name="cil-heart" class="me-1"></svg>
+                  View My Donations
+                </button>
+                <button cButton color="secondary" (click)="goToCampaigns()">
+                  <svg cIcon name="cil-bullhorn" class="me-1"></svg>
+                  Browse Campaigns
+                </button>
+              </div>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="!isLoading && !isSuccess">
+              <svg cIcon name="cil-warning" size="4xl" class="text-warning mb-3"></svg>
+              <h2 class="text-warning mb-3">Payment Incomplete</h2>
+              <p class="text-body-secondary mb-4">
+                {{ errorMessage }}
+              </p>
+              <div class="d-flex gap-2 justify-content-center">
+                <button cButton color="primary" (click)="goToCampaigns()">
+                  <svg cIcon name="cil-arrow-left" class="me-1"></svg>
+                  Back to Campaigns
+                </button>
+                <button cButton color="secondary" (click)="goToMyDonations()">
+                  View My Donations
+                </button>
+              </div>
+            </div>
+
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>
