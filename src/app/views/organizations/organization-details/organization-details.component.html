@@ -418,11 +418,11 @@
 
                   <!-- Has Payment Info -->
                   <div *ngIf="hasPaymentInfo && paymentInfo">
-                    <div class="alert alert-success">
+                    <c-alert color="success" dismissible>
                       <svg cIcon name="cil-check-circle" class="me-1"></svg>
                       <strong>Payment information is configured.</strong>
                       This organization can receive donations.
-                    </div>
+                    </c-alert>
 
                     <c-row>
                       <c-col md="6" class="mb-2">
