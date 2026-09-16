@@ -250,4 +250,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!userId) return 'Unknown';
     return userId.length > 12 ? `${userId.substring(0, 8)}...` : userId;
   }
+
+  get currentYear(): number {
+    return new Date().getFullYear();
+  }
 }
