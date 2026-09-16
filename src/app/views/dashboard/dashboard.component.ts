@@ -1,187 +1,253 @@
-import { Component, DestroyRef, DOCUMENT, effect, inject, OnInit, Renderer2, signal, WritableSignal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ChartOptions } from 'chart.js';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
-  AvatarComponent,
   ButtonDirective,
-  ButtonGroupComponent,
   CardBodyComponent,
   CardComponent,
-  CardFooterComponent,
   CardHeaderComponent,
   ColComponent,
-  FormCheckLabelDirective,
-  GutterDirective,
-  ProgressComponent,
+  ContainerComponent,
   RowComponent,
-  TableDirective
+  AlertComponent,
+  BadgeComponent
 } from '@coreui/angular';
-import { ChartjsComponent } from '@coreui/angular-chartjs';
 import { IconDirective } from '@coreui/icons-angular';
 
-import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
-import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
-import { DashboardChartsData, IChartProps } from './dashboard-charts-data';
-
-interface IUser {
-  name: string;
-  state: string;
-  registered: string;
-  country: string;
-  usage: number;
-  period: string;
-  payment: string;
-  activity: string;
-  avatar: string;
-  status: string;
-  color: string;
-}
+import { AuthService } from '../../services/auth.service';
+import { DashboardService } from '../../services/dashboard.service';
+import {
+  UserStats,
+  TopCampaign,
+  RecentDonation,
+  TopDonor,
+  TrendDataPoint,
+  MonthlyReportDataPoint,
+  DayOfWeekDataPoint,
+  TimeOfDayDataPoint
+} from '../../models/dashboard.models';
+import { DashboardChartComponent } from './components/dashboard-chart/dashboard-chart.component';
 
 @Component({
-  templateUrl: 'dashboard.component.html',
-  styleUrls: ['dashboard.component.scss'],
-  imports: [WidgetsDropdownComponent, CardComponent, CardBodyComponent, RowComponent, ColComponent, ButtonDirective, IconDirective, ReactiveFormsModule, ButtonGroupComponent, FormCheckLabelDirective, ChartjsComponent, CardFooterComponent, GutterDirective, ProgressComponent, WidgetsBrandComponent, CardHeaderComponent, TableDirective, AvatarComponent]
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  imports: [
+    CommonModule,
+    RouterLink,
+    ContainerComponent,
+    RowComponent,
+    ColComponent,
+    CardComponent,
+    CardHeaderComponent,
+    CardBodyComponent,
+    ButtonDirective,
+    AlertComponent,
+    BadgeComponent,
+    IconDirective,
+    DashboardChartComponent
+  ]
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+  isLoading = true;
+  errorMessage: string | null = null;
 
-  readonly #destroyRef: DestroyRef = inject(DestroyRef);
-  readonly #document: Document = inject(DOCUMENT);
-  readonly #renderer: Renderer2 = inject(Renderer2);
-  readonly #chartsData: DashboardChartsData = inject(DashboardChartsData);
+  // Hero stats
+  totalRaised = 0;
+  totalDonations = 0;
+  totalCampaigns = 0;
+  totalOrganizations = 0;
+  totalUsers = 0;
 
-  public users: IUser[] = [
-    {
-      name: 'Yiorgos Avraamu',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'Us',
-      usage: 50,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Mastercard',
-      activity: '10 sec ago',
-      avatar: './assets/images/avatars/1.jpg',
-      status: 'success',
-      color: 'success'
-    },
-    {
-      name: 'Avram Tarasios',
-      state: 'Recurring ',
-      registered: 'Jan 1, 2021',
-      country: 'Br',
-      usage: 10,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Visa',
-      activity: '5 minutes ago',
-      avatar: './assets/images/avatars/2.jpg',
-      status: 'danger',
-      color: 'info'
-    },
-    {
-      name: 'Quintin Ed',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'In',
-      usage: 74,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Stripe',
-      activity: '1 hour ago',
-      avatar: './assets/images/avatars/3.jpg',
-      status: 'warning',
-      color: 'warning'
-    },
-    {
-      name: 'Enéas Kwadwo',
-      state: 'Sleep',
-      registered: 'Jan 1, 2021',
-      country: 'Fr',
-      usage: 98,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Paypal',
-      activity: 'Last month',
-      avatar: './assets/images/avatars/4.jpg',
-      status: 'secondary',
-      color: 'danger'
-    },
-    {
-      name: 'Agapetus Tadeáš',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'Es',
-      usage: 22,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'ApplePay',
-      activity: 'Last week',
-      avatar: './assets/images/avatars/5.jpg',
-      status: 'success',
-      color: 'primary'
-    },
-    {
-      name: 'Friderik Dávid',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'Pl',
-      usage: 43,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Amex',
-      activity: 'Yesterday',
-      avatar: './assets/images/avatars/6.jpg',
-      status: 'info',
-      color: 'dark'
-    }
-  ];
+  // User stats (personal)
+  userStats: UserStats = { totalDonated: 0, donationCount: 0 };
 
-  public mainChart: IChartProps = { type: 'line' };
-  public mainChartRef: WritableSignal<any> = signal(undefined);
-  #mainChartRefEffect = effect(() => {
-    if (this.mainChartRef()) {
-      this.setChartStyles();
-    }
-  });
-  public chart: Array<IChartProps> = [];
-  public trafficRadioGroup = new FormGroup({
-    trafficRadio: new FormControl('Month')
-  });
+  // Charts
+  trendLabels: string[] = [];
+  trendData: number[] = [];
+
+  monthlyLabels: string[] = [];
+  monthlyData: number[] = [];
+
+  dayOfWeekLabels: string[] = [];
+  dayOfWeekData: number[] = [];
+
+  timeOfDayLabels: string[] = [];
+  timeOfDayData: number[] = [];
+
+  // Lists
+  topCampaigns: TopCampaign[] = [];
+  urgentCampaigns: TopCampaign[] = [];
+  topDonors: TopDonor[] = [];
+  latestDonations: RecentDonation[] = [];
+  myRecentDonations: RecentDonation[] = [];
+
+  private timeoutId: any = null;
+
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    this.initCharts();
-    this.updateChartOnColorModeChange();
+    this.loadDashboard();
   }
 
-  initCharts(): void {
-    this.mainChartRef()?.stop();
-    this.mainChart = this.#chartsData.mainChart;
-  }
-
-  setTrafficPeriod(value: string): void {
-    this.trafficRadioGroup.setValue({ trafficRadio: value });
-    this.#chartsData.initMainChart(value);
-    this.initCharts();
-  }
-
-  handleChartRef($chartRef: any) {
-    if ($chartRef) {
-      this.mainChartRef.set($chartRef);
+  ngOnDestroy(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
     }
   }
 
-  updateChartOnColorModeChange() {
-    const unListen = this.#renderer.listen(this.#document.documentElement, 'ColorSchemeChange', () => {
-      this.setChartStyles();
-    });
+  // ==============================
+  // Role Checks
+  // ==============================
 
-    this.#destroyRef.onDestroy(() => {
-      unListen();
+  get isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
+
+  get isOrganizationAdmin(): boolean {
+    const user = this.authService.getUser();
+    if (!user || !user.roles) return false;
+
+    // Check if any role matches "OrgName: Admin" or "OrgName: SubAdmin"
+    return user.roles.some(r =>
+      r.endsWith(': Admin') || r.endsWith(': SubAdmin')
+    );
+  }
+
+  get currentUserFullName(): string {
+    const user = this.authService.getUser();
+    return user?.fullName || user?.userName || 'User';
+  }
+
+  // ==============================
+  // Load Dashboard
+  // ==============================
+
+  loadDashboard(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+    this.cdr.detectChanges();
+
+    const user = this.authService.getUser();
+    const userId = user?.id;
+
+    // Parallel requests
+    forkJoin({
+      totalRaised: this.dashboardService.getTotalDonationsAmount().pipe(catchError(() => of(null))),
+      totalDonations: this.dashboardService.getTotalDonationsCount().pipe(catchError(() => of(null))),
+      totalCampaigns: this.dashboardService.getTotalCampaignsCount().pipe(catchError(() => of(null))),
+      totalOrganizations: this.dashboardService.getTotalOrganizationsCount().pipe(catchError(() => of(null))),
+      totalUsers: this.dashboardService.getTotalUsersCount().pipe(catchError(() => of(null))),
+
+      userTotalDonated: userId
+        ? this.dashboardService.getUserTotalDonated(userId).pipe(catchError(() => of(null)))
+        : of(null),
+      userDonationCount: userId
+        ? this.dashboardService.getUserDonationCount(userId).pipe(catchError(() => of(null)))
+        : of(null),
+
+      trend: this.dashboardService.getDonationsTrend(30).pipe(catchError(() => of(null))),
+      monthly: this.dashboardService.getMonthlyReport(new Date().getFullYear()).pipe(catchError(() => of(null))),
+      dayOfWeek: this.dashboardService.getDonationsByDayOfWeek().pipe(catchError(() => of(null))),
+      timeOfDay: this.dashboardService.getDonationsByTimeOfDay().pipe(catchError(() => of(null))),
+
+      topCampaigns: this.dashboardService.getTopCampaigns(5).pipe(catchError(() => of(null))),
+      urgentCampaigns: this.dashboardService.getUrgentCampaigns(75, 5).pipe(catchError(() => of(null))),
+      topDonors: this.dashboardService.getTopDonors(5).pipe(catchError(() => of(null))),
+      latestDonations: this.dashboardService.getLatestDonations(10).pipe(catchError(() => of(null))),
+      myRecentDonations: userId
+        ? this.dashboardService.getUserDonationHistory(userId, 5).pipe(catchError(() => of(null)))
+        : of(null)
+    }).subscribe({
+      next: (result) => {
+        this.isLoading = false;
+
+        // Hero stats
+        if (result.totalRaised?.success) this.totalRaised = result.totalRaised.data ?? 0;
+        if (result.totalDonations?.success) this.totalDonations = result.totalDonations.data ?? 0;
+        if (result.totalCampaigns?.success) this.totalCampaigns = result.totalCampaigns.data ?? 0;
+        if (result.totalOrganizations?.success) this.totalOrganizations = result.totalOrganizations.data ?? 0;
+        if (result.totalUsers?.success) this.totalUsers = result.totalUsers.data ?? 0;
+
+        // User stats
+        if (result.userTotalDonated?.success) this.userStats.totalDonated = result.userTotalDonated.data ?? 0;
+        if (result.userDonationCount?.success) this.userStats.donationCount = result.userDonationCount.data ?? 0;
+
+        // Charts
+        if (result.trend?.success && result.trend.data) {
+          this.trendLabels = result.trend.data.map((p: TrendDataPoint) =>
+            new Date(p.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+          );
+          this.trendData = result.trend.data.map((p: TrendDataPoint) => p.amount);
+        }
+
+        if (result.monthly?.success && result.monthly.data) {
+          this.monthlyLabels = result.monthly.data.map((p: MonthlyReportDataPoint) => p.month);
+          this.monthlyData = result.monthly.data.map((p: MonthlyReportDataPoint) => p.amount);
+        }
+
+        if (result.dayOfWeek?.success && result.dayOfWeek.data) {
+          this.dayOfWeekLabels = result.dayOfWeek.data.map((p) => p.day);
+          this.dayOfWeekData = result.dayOfWeek.data.map((p) => p.amount);
+        }
+
+        if (result.timeOfDay?.success && result.timeOfDay.data) {
+          this.timeOfDayLabels = result.timeOfDay.data.map((p) => p.timeOfDay);
+          this.timeOfDayData = result.timeOfDay.data.map((p) => p.amount);
+        }
+
+        // Lists
+        if (result.topCampaigns?.success) this.topCampaigns = result.topCampaigns.data ?? [];
+        if (result.urgentCampaigns?.success) this.urgentCampaigns = result.urgentCampaigns.data ?? [];
+        if (result.topDonors?.success) this.topDonors = result.topDonors.data ?? [];
+        if (result.latestDonations?.success) this.latestDonations = result.latestDonations.data ?? [];
+        if (result.myRecentDonations?.success) this.myRecentDonations = result.myRecentDonations.data ?? [];
+
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = 'Failed to load dashboard data.';
+        console.error('Dashboard load error:', error);
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  setChartStyles() {
-    if (this.mainChartRef()) {
-      setTimeout(() => {
-        const options: ChartOptions = { ...this.mainChart.options };
-        const scales = this.#chartsData.getScales();
-        this.mainChartRef().options.scales = { ...options.scales, ...scales };
-        this.mainChartRef().update();
-      });
-    }
+  // ==============================
+  // Helpers
+  // ==============================
+
+  viewCampaign(id: number): void {
+    this.router.navigate(['/campaigns', id]);
+  }
+
+  viewUser(userId: string): void {
+    this.router.navigate(['/admin/users', userId]);
+  }
+
+  getCampaignProgress(campaign: TopCampaign): number {
+    if (!campaign.target || campaign.target === 0 || !campaign.achieved) return 0;
+    return Math.min((campaign.achieved / campaign.target) * 100, 100);
+  }
+
+  getProgressColor(campaign: TopCampaign): string {
+    const percentage = this.getCampaignProgress(campaign);
+    if (percentage >= 90) return 'success';
+    if (percentage >= 60) return 'info';
+    if (percentage >= 30) return 'warning';
+    return 'danger';
+  }
+
+  getDonorShortId(userId: string): string {
+    if (!userId) return 'Unknown';
+    return userId.length > 12 ? `${userId.substring(0, 8)}...` : userId;
   }
 }
