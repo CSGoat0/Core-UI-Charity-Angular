@@ -1,7 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const targetPath = path.join(__dirname, 'src/environments/environment.ts');
+const targetDir = path.join(__dirname, 'src/environments');
+const targetPath = path.join(targetDir, 'environment.ts');
+
+// Create the folder if it doesn't exist
+fs.mkdirSync(targetDir, { recursive: true });
 
 const content = `export const environment = {
   production: ${process.env.NG_BUILD_ENV === 'production'},
@@ -17,4 +21,4 @@ const content = `export const environment = {
 `;
 
 fs.writeFileSync(targetPath, content);
-console.log('✔ environment.ts generated');
+console.log(`✔ environment.ts generated at ${targetPath}`);
