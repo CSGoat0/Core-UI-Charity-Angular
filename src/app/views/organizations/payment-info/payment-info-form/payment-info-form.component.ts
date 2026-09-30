@@ -65,23 +65,35 @@ export class PaymentInfoFormComponent implements OnChanges, OnDestroy {
     });
   }
 
-  // Re-evaluate edit mode whenever existingPaymentInfo changes
+  // Fires whenever ANY @Input changes, including visible + existingPaymentInfo
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['existingPaymentInfo']) {
-      if (this.existingPaymentInfo) {
-        this.isEditMode = true;
-        this.paymentInfoForm.patchValue({
-          apiKey: this.existingPaymentInfo.apiKey,
-          integrationId: this.existingPaymentInfo.integrationId,
-          iframeId: this.existingPaymentInfo.iframeId,
-          hmacKey: this.existingPaymentInfo.hmacKey
-        });
-      } else {
-        this.isEditMode = false;
-        this.paymentInfoForm.reset();
-      }
-      this.cdr.detectChanges();
+    if (changes['existingPaymentInfo'] || changes['visible']) {
+      this.syncFormWithInputs();
     }
+  }
+
+  /**
+   * Syncs the form state with the current inputs.
+   * Called whenever existingPaymentInfo or visible changes.
+   */
+  private syncFormWithInputs(): void {
+    if (this.existingPaymentInfo) {
+      this.isEditMode = true;
+      this.paymentInfoForm.patchValue({
+        apiKey: this.existingPaymentInfo.apiKey,
+        integrationId: this.existingPaymentInfo.integrationId,
+        iframeId: this.existingPaymentInfo.iframeId,
+        hmacKey: this.existingPaymentInfo.hmacKey
+      });
+    } else {
+      this.isEditMode = false;
+      this.paymentInfoForm.reset();
+    }
+
+    // Clear any lingering error when (re)opening
+    this.errorMessage = null;
+
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
