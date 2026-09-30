@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import {
@@ -36,7 +36,7 @@ import { PaymentInfo } from '../../../../models/donation.models';
     IconDirective
   ]
 })
-export class PaymentInfoFormComponent implements OnInit, OnDestroy {
+export class PaymentInfoFormComponent implements OnChanges, OnDestroy {
   @Input() visible = false;
   @Input() organizationId: number | null = null;
   @Input() organizationName: string = '';
@@ -65,15 +65,22 @@ export class PaymentInfoFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit(): void {
-    if (this.existingPaymentInfo) {
-      this.isEditMode = true;
-      this.paymentInfoForm.patchValue({
-        apiKey: this.existingPaymentInfo.apiKey,
-        integrationId: this.existingPaymentInfo.integrationId,
-        iframeId: this.existingPaymentInfo.iframeId,
-        hmacKey: this.existingPaymentInfo.hmacKey
-      });
+  // Re-evaluate edit mode whenever existingPaymentInfo changes
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['existingPaymentInfo']) {
+      if (this.existingPaymentInfo) {
+        this.isEditMode = true;
+        this.paymentInfoForm.patchValue({
+          apiKey: this.existingPaymentInfo.apiKey,
+          integrationId: this.existingPaymentInfo.integrationId,
+          iframeId: this.existingPaymentInfo.iframeId,
+          hmacKey: this.existingPaymentInfo.hmacKey
+        });
+      } else {
+        this.isEditMode = false;
+        this.paymentInfoForm.reset();
+      }
+      this.cdr.detectChanges();
     }
   }
 
