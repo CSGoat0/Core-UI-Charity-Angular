@@ -101,17 +101,6 @@ Navigate to `http://localhost:4200`.
 
 The build artifacts are stored in `dist/`.
 
-## Deployment
-
-The frontend is deployed to Cloudflare Pages. The build configuration uses
-`withHashLocation()`, so routes are accessed via `/#/route`.
-
-To deploy:
-
-1. Push to your Git repository.
-2. Cloudflare Pages builds automatically on push.
-3. Set the environment variables in the Cloudflare Pages dashboard.
-
 ## Related Repositories
 
 - Backend (ASP.NET Core Web API): https://github.com/CSGoat0/TheCharity
