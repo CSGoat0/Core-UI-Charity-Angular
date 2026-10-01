@@ -311,7 +311,7 @@
                 <!-- Current Admin -->
                 <div class="mb-4">
                   <h6>Current Organization Admin</h6>
-                  <div *ngIf="adminUser" class="p-3 border rounded bg-light">
+                  <div *ngIf="adminUser" class="p-3 border rounded bg-body-tertiary">
                     <p class="mb-1">
                       <strong>{{ adminUser.fullName || adminUser.userName }}</strong>
                     </p>
@@ -365,7 +365,7 @@
                 <div class="mb-4">
                   <h6>Sub-Admins</h6>
                   <div *ngIf="subAdmins && subAdmins.length > 0">
-                    <div *ngFor="let subAdmin of subAdmins" class="p-3 border rounded bg-light mb-2">
+                    <div *ngFor="let subAdmin of subAdmins" class="p-3 border rounded bg-body-tertiary mb-2">
                       <div class="d-flex justify-content-between align-items-center">
                         <div>
                           <strong>{{ subAdmin.userFullName || subAdmin.userName }}</strong>
