@@ -16,7 +16,7 @@ import { iconSubset } from './icons/icon-subset';
   providers: [IconSetService] // Add IconSetService as a provider
 })
 export class AppComponent implements OnInit {
-  title = 'CoreUI Angular Admin Template';
+  title = 'Charity';
 
   readonly #destroyRef: DestroyRef = inject(DestroyRef);
   readonly #activatedRoute: ActivatedRoute = inject(ActivatedRoute);
