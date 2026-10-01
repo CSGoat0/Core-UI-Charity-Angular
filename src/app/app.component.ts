@@ -49,6 +49,19 @@ export class AppComponent implements OnInit {
       if (!(evt instanceof NavigationEnd)) {
         return;
       }
+
+      // Read the deepest route's data.title
+      let route = this.#activatedRoute;
+      while (route.firstChild) {
+        route = route.firstChild;
+      }
+
+      const pageTitle = route.snapshot.data['title'];
+      if (pageTitle) {
+        this.#titleService.setTitle(`${pageTitle} - ${this.title}`);
+      } else {
+        this.#titleService.setTitle(this.title);
+      }
     });
 
     this.#activatedRoute.queryParams
