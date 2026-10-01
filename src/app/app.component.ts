@@ -16,7 +16,7 @@ import { iconSubset } from './icons/icon-subset';
   providers: [IconSetService] // Add IconSetService as a provider
 })
 export class AppComponent implements OnInit {
-  title = 'CoreUI Angular Admin Template';
+  title = 'Charity';
 
   readonly #destroyRef: DestroyRef = inject(DestroyRef);
   readonly #activatedRoute: ActivatedRoute = inject(ActivatedRoute);
@@ -48,6 +48,19 @@ export class AppComponent implements OnInit {
     ).subscribe((evt) => {
       if (!(evt instanceof NavigationEnd)) {
         return;
+      }
+
+      // Read the deepest route's data.title
+      let route = this.#activatedRoute;
+      while (route.firstChild) {
+        route = route.firstChild;
+      }
+
+      const pageTitle = route.snapshot.data['title'];
+      if (pageTitle) {
+        this.#titleService.setTitle(`${pageTitle} - ${this.title}`);
+      } else {
+        this.#titleService.setTitle(this.title);
       }
     });
 
