@@ -19,6 +19,9 @@ import {
   ModalBodyComponent,
   ModalFooterComponent,
   ModalHeaderComponent,
+  PaginationComponent,
+  PageItemComponent,
+  PageLinkDirective,
   TooltipDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
@@ -26,11 +29,18 @@ import { OrganizationService } from '../../../services/organization.service';
 import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { DonationService } from '../../../services/donation.service';
-import { OrganizationDetails, OrganizationSubAdmin, CampaignStatus } from '../../../models/organization.models';
+import {
+  OrganizationDetails,
+  OrganizationSubAdmin,
+  CampaignStatus,
+  OrgContactMethod,
+  PaginatedResponse
+} from '../../../models/organization.models';
 import { PaymentInfo } from '../../../models/donation.models';
 import { User } from '../../../models/user.models';
 import { UserDto } from '../../../models/auth.models';
 import { PaymentInfoFormComponent } from '../payment-info/payment-info-form/payment-info-form.component';
+import { ContactMethodFormComponent } from '../contact-method/contact-method-form/contact-method-form.component';
 
 @Component({
   selector: 'app-organization-details',
@@ -55,8 +65,12 @@ import { PaymentInfoFormComponent } from '../payment-info/payment-info-form/paym
     ModalBodyComponent,
     ModalFooterComponent,
     ModalHeaderComponent,
+    PaginationComponent,
+    PageItemComponent,
+    PageLinkDirective,
     TooltipDirective,
-    PaymentInfoFormComponent
+    PaymentInfoFormComponent,
+    ContactMethodFormComponent
   ]
 })
 export class OrganizationDetailsComponent implements OnInit, OnDestroy {
@@ -90,6 +104,17 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
   hasPaymentInfo = false;
   isLoadingPaymentInfo = false;
   showPaymentInfoModal = false;
+
+  // Contact Methods Management
+  contactMethods: OrgContactMethod[] = [];
+  isLoadingContactMethods = false;
+  includeDeletedContactMethods = false;
+  showContactMethodModal = false;
+  editingContactMethod: OrgContactMethod | null = null;
+  contactMethodsPagination: PaginatedResponse<OrgContactMethod> | null = null;
+  contactMethodsCurrentPage = 1;
+  contactMethodsPageSize = 10;
+  contactMethodsTotalPages = 0;
 
   private timeoutId: any = null;
 
@@ -134,6 +159,7 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
           this.loadAdminInfo();
           this.loadSubAdmins();
           this.loadPaymentInfo();
+          this.loadContactMethods();
         } else {
           this.errorMessage = response.message || 'Failed to load organization details.';
         }
@@ -229,6 +255,189 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ==============================
+  // Contact Methods Methods
+  // ==============================
+
+  loadContactMethods(): void {
+    if (!this.organization) return;
+
+    this.isLoadingContactMethods = true;
+    this.cdr.detectChanges();
+
+    const params = {
+      pageNumber: this.contactMethodsCurrentPage,
+      pageSize: this.contactMethodsPageSize
+    };
+
+    this.organizationService.getContactMethods(
+      this.organization.id,
+      params,
+      this.includeDeletedContactMethods
+    ).subscribe({
+      next: (response) => {
+        this.isLoadingContactMethods = false;
+        this.cdr.detectChanges();
+
+        if (response.success && response.data) {
+          this.contactMethods = response.data.items;
+          this.contactMethodsPagination = response.data;
+          this.contactMethodsTotalPages = response.data.totalPages;
+        } else {
+          this.contactMethods = [];
+          this.contactMethodsPagination = null;
+          this.contactMethodsTotalPages = 0;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingContactMethods = false;
+        this.contactMethods = [];
+        this.contactMethodsPagination = null;
+        this.contactMethodsTotalPages = 0;
+        this.cdr.detectChanges();
+        console.error('Load contact methods error:', error);
+      }
+    });
+  }
+
+  openContactMethodModal(existing: OrgContactMethod | null = null): void {
+    this.editingContactMethod = existing;
+    this.showContactMethodModal = true;
+    this.cdr.detectChanges();
+  }
+
+  onContactMethodSaved(): void {
+    this.successMessage = this.editingContactMethod
+      ? 'Contact method updated successfully!'
+      : 'Contact method added successfully!';
+    this.loadContactMethods();
+
+    this.timeoutId = setTimeout(() => {
+      this.successMessage = null;
+      this.cdr.detectChanges();
+    }, 3000);
+  }
+
+  deleteContactMethod(id: number): void {
+    if (!confirm('Are you sure you want to delete this contact method?')) return;
+
+    this.isLoadingContactMethods = true;
+    this.cdr.detectChanges();
+
+    this.organizationService.deleteContactMethod(id).subscribe({
+      next: (response) => {
+        this.isLoadingContactMethods = false;
+        this.cdr.detectChanges();
+
+        if (response.success) {
+          this.successMessage = 'Contact method deleted successfully.';
+          this.loadContactMethods();
+
+          this.timeoutId = setTimeout(() => {
+            this.successMessage = null;
+            this.cdr.detectChanges();
+          }, 3000);
+        } else {
+          this.errorMessage = response.message || 'Failed to delete contact method.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingContactMethods = false;
+        this.cdr.detectChanges();
+        this.errorMessage = error.message || 'An error occurred.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  restoreContactMethod(id: number): void {
+    this.isLoadingContactMethods = true;
+    this.cdr.detectChanges();
+
+    this.organizationService.restoreContactMethod(id).subscribe({
+      next: (response) => {
+        this.isLoadingContactMethods = false;
+        this.cdr.detectChanges();
+
+        if (response.success) {
+          this.successMessage = 'Contact method restored successfully.';
+          this.loadContactMethods();
+
+          this.timeoutId = setTimeout(() => {
+            this.successMessage = null;
+            this.cdr.detectChanges();
+          }, 3000);
+        } else {
+          this.errorMessage = response.message || 'Failed to restore contact method.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoadingContactMethods = false;
+        this.cdr.detectChanges();
+        this.errorMessage = error.message || 'An error occurred.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  toggleDeletedContactMethods(): void {
+    this.includeDeletedContactMethods = !this.includeDeletedContactMethods;
+    this.contactMethodsCurrentPage = 1;
+    this.loadContactMethods();
+  }
+
+  changeContactMethodsPage(page: number): void {
+    if (page < 1 || page > this.contactMethodsTotalPages) return;
+    this.contactMethodsCurrentPage = page;
+    this.loadContactMethods();
+  }
+
+  getContactMethodsPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.contactMethodsTotalPages;
+    const current = this.contactMethodsCurrentPage;
+    const delta = 2;
+
+    for (let i = 1; i <= total; i++) {
+      if (
+        i === 1 ||
+        i === total ||
+        (i >= current - delta && i <= current + delta)
+      ) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  }
+
+  getContactMethodTypeLabel(type: number): string {
+    switch (type) {
+      case 0: return 'Phone';
+      case 1: return 'Email';
+      case 2: return 'Social Media';
+      case 3: return 'Mobile';
+      case 4: return 'Fax';
+      case 5: return 'Website';
+      default: return 'Unknown';
+    }
+  }
+
+  getContactMethodTypeIcon(type: number): string {
+    switch (type) {
+      case 0: return 'cil-phone';
+      case 1: return 'cil-envelope-closed';
+      case 2: return 'cil-share-alt';
+      case 3: return 'cil-mobile';
+      case 4: return 'cil-print';
+      case 5: return 'cil-globe-alt';
+      default: return 'cil-link';
+    }
   }
 
   // ==============================
@@ -618,6 +827,10 @@ export class OrganizationDetailsComponent implements OnInit, OnDestroy {
   }
 
   get canManagePaymentInfo(): boolean {
+    return this.isSuperAdmin || this.isOrganizationAdmin;
+  }
+
+  get canManageContactMethods(): boolean {
     return this.isSuperAdmin || this.isOrganizationAdmin;
   }
 
