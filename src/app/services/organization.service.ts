@@ -12,7 +12,11 @@ import {
   CreateOrganizationRequest,
   UpdateOrganizationRequest,
   AssignAdminRequest,
-  ServiceResponse
+  ServiceResponse,
+  OrgContactMethod,
+  CreateOrgContactMethodRequest,
+  UpdateOrgContactMethodRequest,
+  ContactType
 } from '../models/organization.models';
 import { UserDto } from '../models/auth.models';
 
@@ -248,6 +252,75 @@ export class OrganizationService {
   isUserSubAdmin(orgId: number, userId: string): Observable<ServiceResponse<boolean>> {
     return this.http.get<ServiceResponse<boolean>>(
       `${this.apiUrl}/${orgId}/sub-admins/${userId}/check`
+    );
+  }
+
+  // ==============================
+  // Contact Methods
+  // ==============================
+
+  getContactMethods(orgId: number, params: PaginationParameters, includeDeleted: boolean = false): Observable<ServiceResponse<PaginatedResponse<OrgContactMethod>>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString())
+      .set('includeDeleted', includeDeleted.toString());
+
+    return this.http.get<ServiceResponse<PaginatedResponse<OrgContactMethod>>>(
+      `${this.apiUrl}/${orgId}/contact-methods`,
+      { params: httpParams }
+    );
+  }
+
+  getContactMethodById(contactId: number): Observable<ServiceResponse<OrgContactMethod>> {
+    return this.http.get<ServiceResponse<OrgContactMethod>>(
+      `${this.apiUrl}/contact-methods/${contactId}`
+    );
+  }
+
+  createContactMethod(data: CreateOrgContactMethodRequest): Observable<ServiceResponse<OrgContactMethod>> {
+    return this.http.post<ServiceResponse<OrgContactMethod>>(
+      `${this.apiUrl}/contact-methods`,
+      data
+    );
+  }
+
+  updateContactMethod(contactId: number, data: UpdateOrgContactMethodRequest): Observable<ServiceResponse<OrgContactMethod>> {
+    return this.http.put<ServiceResponse<OrgContactMethod>>(
+      `${this.apiUrl}/contact-methods/${contactId}`,
+      data
+    );
+  }
+
+  deleteContactMethod(contactId: number): Observable<ServiceResponse<boolean>> {
+    return this.http.delete<ServiceResponse<boolean>>(
+      `${this.apiUrl}/contact-methods/${contactId}`
+    );
+  }
+
+  restoreContactMethod(contactId: number): Observable<ServiceResponse<boolean>> {
+    return this.http.post<ServiceResponse<boolean>>(
+      `${this.apiUrl}/contact-methods/restore/${contactId}`,
+      {}
+    );
+  }
+
+  getContactMethodsByType(orgId: number, params: PaginationParameters, type: ContactType, includeDeleted: boolean = false): Observable<ServiceResponse<PaginatedResponse<OrgContactMethod>>> {
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString())
+      .set('type', type.toString())
+      .set('includeDeleted', includeDeleted.toString());
+
+    return this.http.get<ServiceResponse<PaginatedResponse<OrgContactMethod>>>(
+      `${this.apiUrl}/${orgId}/contact-type`,
+      { params: httpParams }
+    );
+  }
+
+  getContactMethodCountByType(orgId: number, type: ContactType): Observable<ServiceResponse<number>> {
+    return this.http.get<ServiceResponse<number>>(
+      `${this.apiUrl}/${orgId}/contact-type/count`,
+      { params: { type: type.toString() } }
     );
   }
 
