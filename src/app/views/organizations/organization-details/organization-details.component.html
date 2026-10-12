@@ -279,31 +279,133 @@
 
               <!-- Contacts Tab -->
               <div *ngIf="activeTab === 'contacts'">
-                <div *ngIf="organization.contactMethods && organization.contactMethods.length > 0">
-                  <table class="table table-striped">
+
+                <!-- Loading State -->
+                <div *ngIf="isLoadingContactMethods" class="text-center py-4">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="text-body-secondary mt-2">Loading contact methods...</p>
+                </div>
+
+                <ng-container *ngIf="!isLoadingContactMethods">
+
+                  <!-- Header Row: Include Deleted switch + Add button -->
+                  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="includeDeletedContactMethods"
+                        [checked]="includeDeletedContactMethods"
+                        (change)="toggleDeletedContactMethods()"
+                      />
+                      <label class="form-check-label" for="includeDeletedContactMethods">
+                        Include Deleted
+                      </label>
+                    </div>
+                    <button
+                      cButton
+                      color="primary"
+                      size="sm"
+                      (click)="openContactMethodModal(null)"
+                      *ngIf="canManageContactMethods"
+                    >
+                      <svg cIcon name="cil-plus" class="me-1"></svg>
+                      Add Contact Method
+                    </button>
+                  </div>
+
+                  <!-- Empty State -->
+                  <div *ngIf="contactMethods.length === 0" class="text-center py-3">
+                    <p class="text-body-secondary">No contact methods found.</p>
+                  </div>
+
+                  <!-- Table -->
+                  <table cTable striped *ngIf="contactMethods.length > 0">
                     <thead>
                       <tr>
                         <th>Type</th>
                         <th>Value</th>
                         <th>Status</th>
+                        <th class="text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let contact of organization.contactMethods">
-                        <td>{{ contact.contactType }}</td>
-                        <td>{{ contact.contactValue }}</td>
+                      <tr *ngFor="let contact of contactMethods">
+                        <td>
+                          <svg cIcon [name]="getContactMethodTypeIcon(contact.type)" class="me-1"></svg>
+                          {{ getContactMethodTypeLabel(contact.type) }}
+                        </td>
+                        <td>{{ contact.value }}</td>
                         <td>
                           <c-badge [color]="contact.isDeleted ? 'danger' : 'success'">
                             {{ contact.isDeleted ? 'Deleted' : 'Active' }}
                           </c-badge>
                         </td>
+                        <td class="text-center">
+                          <button
+                            cButton
+                            color="warning"
+                            size="sm"
+                            class="me-1"
+                            (click)="openContactMethodModal(contact)"
+                            *ngIf="!contact.isDeleted && canManageContactMethods"
+                            cTooltip="Edit"
+                          >
+                            <svg cIcon name="cil-pencil"></svg>
+                          </button>
+                          <button
+                            cButton
+                            color="danger"
+                            size="sm"
+                            class="me-1"
+                            (click)="deleteContactMethod(contact.id)"
+                            *ngIf="!contact.isDeleted && canManageContactMethods"
+                            cTooltip="Delete"
+                          >
+                            <svg cIcon name="cil-trash"></svg>
+                          </button>
+                          <button
+                            cButton
+                            color="success"
+                            size="sm"
+                            (click)="restoreContactMethod(contact.id)"
+                            *ngIf="contact.isDeleted && canManageContactMethods"
+                            cTooltip="Restore"
+                          >
+                            <svg cIcon name="cil-arrow-circle-left"></svg>
+                          </button>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
-                </div>
-                <div *ngIf="!organization.contactMethods || organization.contactMethods.length === 0" class="text-center py-3">
-                  <p class="text-body-secondary">No contact methods found.</p>
-                </div>
+
+                  <!-- Pagination -->
+                  <div *ngIf="contactMethodsPagination && contactMethodsTotalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                      <span class="text-body-secondary">
+                        Showing {{ ((contactMethodsCurrentPage - 1) * contactMethodsPageSize) + 1 }} to
+                        {{ Math.min(contactMethodsCurrentPage * contactMethodsPageSize, contactMethodsPagination.totalCount) }} of
+                        {{ contactMethodsPagination.totalCount }} entries
+                      </span>
+                    </div>
+                    <c-pagination aria-label="Contact methods page navigation">
+                      <c-page-item [disabled]="contactMethodsCurrentPage === 1">
+                        <a cPageLink (click)="changeContactMethodsPage(contactMethodsCurrentPage - 1)">Previous</a>
+                      </c-page-item>
+                      <c-page-item *ngFor="let page of getContactMethodsPageNumbers()" [active]="page === contactMethodsCurrentPage">
+                        <a cPageLink (click)="changeContactMethodsPage(page)">
+                          {{ page }}
+                        </a>
+                      </c-page-item>
+                      <c-page-item [disabled]="contactMethodsCurrentPage === contactMethodsTotalPages">
+                        <a cPageLink (click)="changeContactMethodsPage(contactMethodsCurrentPage + 1)">Next</a>
+                      </c-page-item>
+                    </c-pagination>
+                  </div>
+
+                </ng-container>
               </div>
 
               <!-- Admin Management Tab -->
@@ -608,6 +710,16 @@
           (visibleChange)="showPaymentInfoModal = $event"
           (saved)="onPaymentInfoSaved()"
         ></app-payment-info-form>
+
+        <!-- Contact Method Modal -->
+        <app-contact-method-form
+          [visible]="showContactMethodModal"
+          [organizationId]="organization?.id || null"
+          [organizationName]="organization?.name || ''"
+          [existingContactMethod]="editingContactMethod"
+          (visibleChange)="showContactMethodModal = $event"
+          (saved)="onContactMethodSaved()"
+        ></app-contact-method-form>
       </c-col>
     </c-row>
   </c-container>

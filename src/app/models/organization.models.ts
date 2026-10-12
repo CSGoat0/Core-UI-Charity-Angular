@@ -38,12 +38,23 @@ export interface OrganizationRole {
 
 export interface OrgContactMethod {
   id: number;
+  value: string;
+  type: ContactType;
   organizationId: number;
-  contactType: ContactType;
-  contactValue: string;
   isDeleted: boolean;
-  createdAt: Date;
+  registrationDate: Date;
   updatedOn: Date | null;
+}
+
+export interface CreateOrgContactMethodRequest {
+  value: string;
+  type: ContactType;
+  organizationId: number;
+}
+
+export interface UpdateOrgContactMethodRequest {
+  value?: string;
+  type?: ContactType;
 }
 
 export interface CampaignResponse {
@@ -65,14 +76,12 @@ export enum OrganizationRoleType {
 }
 
 export enum ContactType {
-  Email = 0,
-  Phone = 1,
-  Website = 2,
-  Facebook = 3,
-  Twitter = 4,
-  Instagram = 5,
-  LinkedIn = 6,
-  YouTube = 7
+  Phone = 0,
+  Email = 1,
+  SocialMedia = 2,
+  Mobile = 3,
+  Fax = 4,
+  Website = 5
 }
 
 export enum CampaignStatus {

@@ -1,0 +1,90 @@
+<c-modal [visible]="visible" (visibleChange)="visibleChange.emit($event)" alignment="center" size="lg">
+  <c-modal-header>
+    <h5 cModalTitle>
+      {{ isEditMode ? 'Edit Contact Method' : 'Add Contact Method' }}
+    </h5>
+    <button cButtonClose (click)="close()"></button>
+  </c-modal-header>
+  <c-modal-body>
+
+    <div *ngIf="organizationName" class="mb-3">
+      <p class="mb-1"><strong>Organization:</strong></p>
+      <p class="text-body-secondary">{{ organizationName }}</p>
+    </div>
+
+    <div class="alert alert-info small">
+      <svg cIcon name="cil-info" class="me-1"></svg>
+      These contact details are shown on the organization's public profile so donors can reach them.
+    </div>
+
+    <!-- Error Message -->
+    <c-alert *ngIf="errorMessage" color="danger" dismissible>
+      {{ errorMessage }}
+    </c-alert>
+
+    <form [formGroup]="contactMethodForm" (ngSubmit)="onSubmit()">
+
+      <!-- Type -->
+      <div class="mb-3">
+        <label cLabel for="type">Contact Type <span class="text-danger">*</span></label>
+        <c-dropdown>
+          <button cDropdownToggle color="secondary" class="w-100 d-flex justify-content-between align-items-center">
+            {{ getSelectedTypeLabel() }}
+          </button>
+          <ul cDropdownMenu class="w-100">
+            <li *ngFor="let option of typeOptions">
+              <a cDropdownItem (click)="selectType(option.value)">
+                {{ option.label }}
+              </a>
+            </li>
+          </ul>
+        </c-dropdown>
+        <div *ngIf="type?.invalid && type?.touched" class="invalid-feedback d-block">
+          <span>Contact type is required</span>
+        </div>
+      </div>
+
+      <!-- Value -->
+      <div class="mb-3">
+        <label cLabel for="value">Contact Value <span class="text-danger">*</span></label>
+        <c-input-group>
+          <span cInputGroupText>
+            <svg cIcon name="cil-link"></svg>
+          </span>
+          <input
+            type="text"
+            cFormControl
+            id="value"
+            formControlName="value"
+            placeholder="Enter the contact value (email, phone number, URL, handle, etc.)"
+            [ngClass]="{
+              'is-invalid': value?.invalid && value?.touched
+            }"
+          />
+        </c-input-group>
+        <div *ngIf="value?.invalid && value?.touched" class="invalid-feedback d-block">
+          <span *ngIf="value?.errors?.['required']">Value is required</span>
+          <span *ngIf="value?.errors?.['maxlength']">Value cannot exceed 200 characters</span>
+        </div>
+        <small class="text-muted">
+          For social media, enter the handle or full URL. For email, enter the full address.
+        </small>
+      </div>
+
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" (click)="close()" [disabled]="isLoading">
+      Cancel
+    </button>
+    <button
+      cButton
+      color="primary"
+      (click)="onSubmit()"
+      [disabled]="isLoading || contactMethodForm.invalid"
+    >
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Contact Method' : 'Save Contact Method') }}
+    </button>
+  </c-modal-footer>
+</c-modal>
