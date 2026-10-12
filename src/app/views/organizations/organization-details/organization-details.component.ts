@@ -22,6 +22,7 @@ import {
   PaginationComponent,
   PageItemComponent,
   PageLinkDirective,
+  TableDirective,
   TooltipDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
@@ -69,6 +70,7 @@ import { ContactMethodFormComponent } from '../contact-method/contact-method-for
     PageItemComponent,
     PageLinkDirective,
     TooltipDirective,
+    TableDirective,
     PaymentInfoFormComponent,
     ContactMethodFormComponent
   ]
