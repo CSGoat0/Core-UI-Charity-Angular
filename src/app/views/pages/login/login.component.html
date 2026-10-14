@@ -50,6 +50,27 @@
                   </div>
                 </div>
 
+                <!-- Google External Login -->
+                <button
+                  cButton
+                  color="secondary"
+                  class="w-100 mb-3 d-flex align-items-center justify-content-center"
+                  type="button"
+                  (click)="loginWithGoogle()"
+                  [disabled]="isExternalLoading || isLoading"
+                >
+                  <span *ngIf="isExternalLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <svg *ngIf="!isExternalLoading" cIcon name="cibGoogle" class="me-2" size="lg"></svg>
+                  Sign in with Google
+                </button>
+
+                <!-- Divider -->
+                <div class="d-flex align-items-center mb-3">
+                  <hr class="flex-grow-1 my-0" />
+                  <span class="px-2 text-body-secondary small">or continue with email</span>
+                  <hr class="flex-grow-1 my-0" />
+                </div>
+
                 <!-- Username Field -->
                 <c-input-group class="mb-3">
                   <span cInputGroupText>
