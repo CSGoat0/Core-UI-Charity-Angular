@@ -1,0 +1,37 @@
+<div class="bg-light dark:bg-transparent min-vh-100 d-flex flex-row align-items-center">
+  <c-container breakpoint="md">
+    <c-row class="justify-content-center">
+      <c-col lg="6" xl="5">
+        <c-card class="p-4">
+          <c-card-body class="text-center">
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading">
+              <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <h4>Signing you in...</h4>
+              <p class="text-body-secondary mb-0">
+                Please wait while we finish setting up your account.
+              </p>
+            </div>
+
+            <!-- Error State -->
+            <div *ngIf="!isLoading && errorMessage">
+              <svg cIcon name="cilWarning" size="3xl" class="text-danger mb-3"></svg>
+              <h4>Sign-in failed</h4>
+              <c-alert color="danger" [dismissible]="false">
+                {{ errorMessage }}
+              </c-alert>
+              <button cButton color="primary" (click)="goToLogin()">
+                <svg cIcon name="cilArrowLeft" class="me-1"></svg>
+                Back to Login
+              </button>
+            </div>
+
+          </c-card-body>
+        </c-card>
+      </c-col>
+    </c-row>
+  </c-container>
+</div>
