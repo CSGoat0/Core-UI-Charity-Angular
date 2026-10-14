@@ -282,6 +282,83 @@ export class AuthService {
     );
   }
 
+  /**
+   * Complete external login by storing the JWT received from the backend redirect
+   * and decoding it to reconstruct the user object.
+   *
+   * The backend redirects to the frontend callback route with the token and
+   * returnUrl as query params. The callback component calls this method with the
+   * token so we can persist it before navigating away.
+   */
+  completeExternalLogin(token: string): void {
+    if (!token) {
+      throw new Error('Authentication token is required.');
+    }
+
+    // Store the token immediately so any subsequent API call is authenticated.
+    localStorage.setItem(this.tokenKey, token);
+
+    // Decode the JWT payload. We do not verify the signature here — verification
+    // happens server-side on every API call. We only read claims to build the
+    // local user object for UI purposes.
+    const user = this.decodeJwtToUser(token);
+
+    this.currentUserSubject.next(user);
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    this.isAuthenticatedSubject.next(true);
+  }
+
+  /**
+   * Decodes a JWT payload into a UserDto shape.
+   * Only fields present in the token are populated; the rest are placeholders.
+   * Callers can refresh from the API for full data via getCurrentUser().
+   */
+  private decodeJwtToUser(token: string): UserDto {
+    const payloadBase64Url = token.split('.')[1];
+    if (!payloadBase64Url) {
+      throw new Error('Malformed token.');
+    }
+
+    // JWT uses base64url encoding. Convert to standard base64 and pad.
+    const base64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+    const payloadJson = decodeURIComponent(
+      atob(padded)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    const payload = JSON.parse(payloadJson);
+
+    // .NET JWT claim names.
+    const id: string = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';
+    const email: string = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || '';
+    const userName: string = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || '';
+
+    // Role claims can be a single string or an array depending on how many roles.
+    let roles: string[] = [];
+    const rawRole = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    if (Array.isArray(rawRole)) {
+      roles = rawRole;
+    } else if (typeof rawRole === 'string') {
+      roles = [rawRole];
+    }
+
+    return {
+      id,
+      email,
+      userName,
+      fullName: '',           // not in the token; filled by getCurrentUser()
+      phoneNumber: '',        // not in the token; filled by getCurrentUser()
+      emailConfirmed: true,   // external logins are treated as confirmed
+      roles,
+      createdAt: new Date(),
+      updatedAt: undefined,
+      deletedAt: undefined
+    };
+  }
+
   // ==============================
   // Token and User Management
   // ==============================
