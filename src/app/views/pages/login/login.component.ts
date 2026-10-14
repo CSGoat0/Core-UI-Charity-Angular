@@ -51,6 +51,7 @@ export class LoginComponent implements OnInit {
   resendSuccess: string | null = null;
   resendError: string | null = null;
   isResending = false;
+  isExternalLoading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -74,6 +75,17 @@ export class LoginComponent implements OnInit {
 
     // Get return URL from query params
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+  }
+
+  loginWithGoogle(): void {
+    this.isExternalLoading = true;
+    this.errorMessage = null;
+    this.cdr.detectChanges();
+
+    // Full page navigation to the backend OAuth entry point.
+    // The backend redirects to Google, then back to our API, which redirects
+    // the browser to /pages/external-login-callback with the token.
+    this.authService.externalLogin('Google', this.returnUrl);
   }
 
   onSubmit(): void {

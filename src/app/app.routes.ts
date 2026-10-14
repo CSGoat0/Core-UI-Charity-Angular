@@ -140,6 +140,13 @@ export const routes: Routes = [
     }
   },
   {
+    path: 'external-login-callback',
+    loadComponent: () => import('./views/pages/external-login-callback/external-login-callback.component').then(m => m.ExternalLoginCallbackComponent),
+    data: {
+      title: 'External Login Callback'
+    }
+  },
+  {
     path: 'payment-callback',
     loadComponent: () => import('./views/pages/payment-callback/payment-callback.component').then(m => m.PaymentCallbackComponent),
     data: {

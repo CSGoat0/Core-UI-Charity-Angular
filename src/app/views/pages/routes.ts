@@ -42,18 +42,5 @@ export const routes: Routes = [
     data: {
       title: 'Reset Password'
     }
-  },
-
-  // ==============================
-  // EXTERNAL LOGIN CALLBACK ROUTE (Commented - Will be implemented later)
-  // ==============================
-  /*
-  {
-    path: 'external-login-callback',
-    loadComponent: () => import('./external-login-callback/external-login-callback.component').then(m => m.ExternalLoginCallbackComponent),
-    data: {
-      title: 'External Login Callback'
-    }
-  },
-  */
+  }
 ];
