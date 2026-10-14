@@ -45,9 +45,8 @@ export const routes: Routes = [
   },
 
   // ==============================
-  // EXTERNAL LOGIN CALLBACK ROUTE (Commented - Will be implemented later)
+  // EXTERNAL LOGIN CALLBACK ROUTE
   // ==============================
-  /*
   {
     path: 'external-login-callback',
     loadComponent: () => import('./external-login-callback/external-login-callback.component').then(m => m.ExternalLoginCallbackComponent),
@@ -55,5 +54,4 @@ export const routes: Routes = [
       title: 'External Login Callback'
     }
   },
-  */
 ];
