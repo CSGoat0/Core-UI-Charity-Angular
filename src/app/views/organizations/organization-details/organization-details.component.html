@@ -558,7 +558,7 @@
                         <svg cIcon name="cil-pencil" class="me-1"></svg>
                         Edit Payment Info
                       </button>
-                      <button cButton color="danger" size="sm" (click)="deletePaymentInfo()" *ngIf="isSuperAdmin">
+                      <button cButton color="danger" size="sm" (click)="deletePaymentInfo()" *ngIf="canManagePaymentInfo">
                         <svg cIcon name="cil-trash" class="me-1"></svg>
                         Delete Payment Info
                       </button>
