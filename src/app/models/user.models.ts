@@ -59,6 +59,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   id: string;
   fullName?: string;
+  userName?: string;
   phoneNumber?: string;
   address?: string;
   imgPath?: string;
