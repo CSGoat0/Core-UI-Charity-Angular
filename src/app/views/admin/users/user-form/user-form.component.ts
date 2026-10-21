@@ -178,8 +178,8 @@ export class UserFormComponent implements OnInit, OnDestroy {
         id: this.userId,
         userName: formData.userName,
         fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
+        phoneNumber: formData.phoneNumber || undefined,
+        address: formData.address || undefined,
         imgPath: formData.imgPath || undefined
       };
 
@@ -220,9 +220,9 @@ export class UserFormComponent implements OnInit, OnDestroy {
         userName: formData.userName,
         fullName: formData.fullName,
         email: formData.email,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: formData.phoneNumber || undefined,
         password: formData.password,
-        address: formData.address,
+        address: formData.address || undefined,
         imgPath: formData.imgPath || undefined
       };
 
