@@ -67,15 +67,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.profileForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(2)]],
-      userName: ['', [Validators.required, Validators.minLength(3)]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+      userName: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        Validators.pattern(/^[A-Za-z0-9._-]+$/)
+      ]],
       email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
-      phoneNumber: ['']
+      phoneNumber: ['', [Validators.maxLength(20)]]
     });
 
     this.passwordForm = this.fb.group({
-      currentPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      currentPassword: ['', [Validators.required, Validators.maxLength(100)]],
+      newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
       confirmNewPassword: ['', [Validators.required]]
     }, {
       validators: this.passwordMatchValidator
