@@ -13,7 +13,8 @@ import {
   BadgeComponent,
   NavComponent,
   NavItemComponent,
-  NavLinkDirective
+  NavLinkDirective,
+  TooltipDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
@@ -41,6 +42,7 @@ import { DonateModalComponent } from '../../donations/donate-modal/donate-modal.
     NavComponent,
     NavItemComponent,
     NavLinkDirective,
+    TooltipDirective,
     DonateModalComponent
   ]
 })
@@ -297,5 +299,13 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
     return this.campaign?.organizations !== undefined &&
            this.campaign.organizations !== null &&
            this.campaign.organizations.length > 0;
+  }
+
+  /**
+   * True when donations should be blocked for this campaign.
+   * Used to disable the Donate button and show the disabled banner.
+   */
+  get donationsDisabled(): boolean {
+    return !!this.campaign && !this.campaign.canReceiveDonations;
   }
 }
