@@ -156,6 +156,32 @@
                         <span *ngIf="phoneNumber?.errors?.['maxlength']">Phone number cannot exceed 20 characters</span>
                       </div>
                     </c-col>
+
+                    <c-col md="12" class="mb-3">
+                      <label cLabel for="imgPath">Profile Image URL</label>
+                      <c-input-group>
+                        <span cInputGroupText>
+                          <svg cIcon name="cil-image"></svg>
+                        </span>
+                        <input
+                          type="text"
+                          cFormControl
+                          id="imgPath"
+                          formControlName="imgPath"
+                          placeholder="https://example.com/avatar.png"
+                          [ngClass]="{
+                            'is-invalid': imgPath?.invalid && imgPath?.touched
+                          }"
+                        />
+                      </c-input-group>
+                      <div *ngIf="imgPath?.invalid && imgPath?.touched" class="invalid-feedback d-block">
+                        <span *ngIf="imgPath?.errors?.['maxlength']">Image URL cannot exceed 500 characters</span>
+                        <span *ngIf="imgPath?.errors?.['pattern']">Image URL must start with http:// or https://</span>
+                      </div>
+                      <div class="mt-2">
+                        <app-image-preview [src]="imgPath?.value" size="md" fallbackIcon="cil-user"></app-image-preview>
+                      </div>
+                    </c-col>
                   </c-row>
 
                   <div class="d-flex gap-2 mt-3">
