@@ -298,4 +298,12 @@ export class CampaignDetailsComponent implements OnInit, OnDestroy {
            this.campaign.organizations !== null &&
            this.campaign.organizations.length > 0;
   }
+
+  /**
+   * True when donations should be blocked for this campaign.
+   * Used to disable the Donate button and show the disabled banner.
+   */
+  get donationsDisabled(): boolean {
+    return !!this.campaign && !this.campaign.canReceiveDonations;
+  }
 }
