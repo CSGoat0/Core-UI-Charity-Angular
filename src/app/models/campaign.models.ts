@@ -15,6 +15,7 @@ export interface CampaignResponse {
   updatedOn: Date | null;
   deadline: Date;
   daysRemaining: number;
+  canReceiveDonations: boolean;
 }
 
 export interface CampaignDetails extends CampaignResponse {
