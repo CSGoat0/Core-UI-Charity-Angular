@@ -52,11 +52,16 @@ export class RegisterComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.registerForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(2)]],
-      userName: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', []],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+      userName: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        Validators.pattern(/^[A-Za-z0-9._-]+$/)
+      ]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
+      phoneNumber: ['', [Validators.maxLength(20)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
       confirmPassword: ['', [Validators.required]]
     }, {
       validators: this.passwordMatchValidator
