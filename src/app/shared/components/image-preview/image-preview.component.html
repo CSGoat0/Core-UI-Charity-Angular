@@ -1,0 +1,12 @@
+<div [ngClass]="['image-preview', 'image-preview--' + size]">
+  <img
+    *ngIf="showImage"
+    [src]="src!"
+    [alt]="alt"
+    (error)="onImageError()"
+    class="image-preview__img"
+  />
+  <div *ngIf="!showImage" class="image-preview__fallback">
+    <svg [cIcon]="fallbackIcon" class="image-preview__icon"></svg>
+  </div>
+</div>
