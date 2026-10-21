@@ -22,6 +22,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { UserDto } from '../../models/auth.models';
+import { ImagePreviewComponent } from '../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-profile',
@@ -43,7 +44,8 @@ import { UserDto } from '../../models/auth.models';
     IconDirective,
     NavComponent,
     NavItemComponent,
-    NavLinkDirective
+    NavLinkDirective,
+    ImagePreviewComponent
   ]
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -75,7 +77,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
         Validators.pattern(/^[A-Za-z0-9._-]+$/)
       ]],
       email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.maxLength(20)]]
+      phoneNumber: ['', [Validators.maxLength(20)]],
+      imgPath: ['', [
+        Validators.maxLength(500),
+        Validators.pattern(/^https?:\/\/.+/)
+      ]]
     });
 
     this.passwordForm = this.fb.group({
@@ -165,7 +171,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       fullName: user.fullName || '',
       userName: user.userName || '',
       email: user.email || '',
-      phoneNumber: user.phoneNumber || ''
+      phoneNumber: user.phoneNumber || '',
+      imgPath: (user as any).imgPath || ''
     });
     this.cdr.detectChanges();
   }
@@ -195,7 +202,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
       fullName: this.profileForm.get('fullName')?.value,
       userName: this.profileForm.get('userName')?.value,
       email: this.user.email,
-      phoneNumber: this.profileForm.get('phoneNumber')?.value
+      phoneNumber: this.profileForm.get('phoneNumber')?.value,
+      imgPath: this.profileForm.get('imgPath')?.value || undefined
     };
 
     this.authService.updateUser(updatedData).subscribe({
@@ -306,6 +314,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get userName() { return this.profileForm.get('userName'); }
   get email() { return this.profileForm.get('email'); }
   get phoneNumber() { return this.profileForm.get('phoneNumber'); }
+  get imgPath() { return this.profileForm.get('imgPath'); }
   get currentPassword() { return this.passwordForm.get('currentPassword'); }
   get newPassword() { return this.passwordForm.get('newPassword'); }
   get confirmNewPassword() { return this.passwordForm.get('confirmNewPassword'); }
