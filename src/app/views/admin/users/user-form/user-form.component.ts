@@ -176,6 +176,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
     if (this.isEditMode && this.userId) {
       const updateData: UpdateUserRequest = {
         id: this.userId,
+        userName: formData.userName,
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
         address: formData.address,
