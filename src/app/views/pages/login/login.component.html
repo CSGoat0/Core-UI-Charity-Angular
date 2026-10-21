@@ -10,6 +10,12 @@
                 <h1>Login</h1>
                 <p class="text-body-secondary">Sign In to your account</p>
 
+                <!-- Cold Start Notice -->
+                <c-alert color="info" [dismissible]="true" class="small">
+                  <svg cIcon name="cil-info" class="me-1"></svg>
+                  The server may take a few seconds to respond on the first request after a period of inactivity. If your first login attempt feels slow, please wait — it will complete.
+                </c-alert>
+
                 <!-- Error Alert -->
                 <c-alert *ngIf="errorMessage" color="danger" dismissible>
                   {{ errorMessage }}
