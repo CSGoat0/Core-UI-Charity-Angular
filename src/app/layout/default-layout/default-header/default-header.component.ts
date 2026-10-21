@@ -3,7 +3,6 @@ import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import {
-  AvatarComponent,
   BreadcrumbRouterComponent,
   ColorModeService,
   ContainerComponent,
@@ -23,6 +22,7 @@ import {
 
 import { IconDirective } from '@coreui/icons-angular';
 import { AuthService } from '../../../services/auth.service';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-default-header',
@@ -41,11 +41,11 @@ import { AuthService } from '../../../services/auth.service';
     BreadcrumbRouterComponent,
     DropdownComponent,
     DropdownToggleDirective,
-    AvatarComponent,
     DropdownMenuDirective,
     DropdownHeaderDirective,
     DropdownItemDirective,
-    DropdownDividerDirective
+    DropdownDividerDirective,
+    ImagePreviewComponent
   ]
 })
 export class DefaultHeaderComponent extends HeaderComponent {
@@ -114,6 +114,17 @@ export class DefaultHeaderComponent extends HeaderComponent {
       return user.fullName.substring(0, 2).toUpperCase();
     }
     return user?.userName?.substring(0, 2).toUpperCase() || 'U';
+  }
+
+  /**
+   * Get the current user's profile image URL, or null if not set.
+   * Used by the header avatar to display the user's picture when available.
+   */
+  getUserImgPath(): string | null {
+    const user = this.currentUser;
+    // UserDto may not declare imgPath in every version of auth.models.ts;
+    // casting to access the runtime field safely.
+    return (user as any)?.imgPath || null;
   }
 
   /**

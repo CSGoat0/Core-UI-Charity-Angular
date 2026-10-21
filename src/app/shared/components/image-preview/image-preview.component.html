@@ -6,7 +6,10 @@
     (error)="onImageError()"
     class="image-preview__img"
   />
-  <div *ngIf="!showImage" class="image-preview__fallback">
+  <span *ngIf="showTextFallback" class="image-preview__fallback-text">
+    {{ fallbackText }}
+  </span>
+  <div *ngIf="!showImage && !showTextFallback" class="image-preview__fallback">
     <svg [cIcon]="fallbackIcon" class="image-preview__icon"></svg>
   </div>
 </div>

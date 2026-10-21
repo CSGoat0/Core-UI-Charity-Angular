@@ -11,6 +11,7 @@ import { IconDirective } from '@coreui/icons-angular';
 export class ImagePreviewComponent implements OnChanges {
   @Input() src: string | null = null;
   @Input() fallbackIcon: string = 'cil-image';
+  @Input() fallbackText: string | null = null;
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
   @Input() alt: string = 'Preview';
 
@@ -19,7 +20,6 @@ export class ImagePreviewComponent implements OnChanges {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Reset failure state when the source changes so a new URL gets a fresh chance to load.
     if (changes['src']) {
       this.imageFailed = false;
     }
@@ -32,5 +32,9 @@ export class ImagePreviewComponent implements OnChanges {
 
   get showImage(): boolean {
     return !!this.src && !this.imageFailed;
+  }
+
+  get showTextFallback(): boolean {
+    return !this.showImage && !!this.fallbackText;
   }
 }
