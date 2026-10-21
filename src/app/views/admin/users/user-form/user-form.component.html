@@ -59,14 +59,14 @@
                     [ngClass]="{
                       'is-invalid': userName?.invalid && userName?.touched
                     }"
-                    [disabled]="isEditMode"
                   />
                 </c-input-group>
                 <div *ngIf="userName?.invalid && userName?.touched" class="invalid-feedback d-block">
                   <span *ngIf="userName?.errors?.['required']">Username is required</span>
                   <span *ngIf="userName?.errors?.['minlength']">Username must be at least 3 characters</span>
+                  <span *ngIf="userName?.errors?.['maxlength']">Username cannot exceed 50 characters</span>
+                  <span *ngIf="userName?.errors?.['pattern']">Username can only contain letters, digits, dots, underscores, and hyphens</span>
                 </div>
-                <small *ngIf="isEditMode" class="text-muted">Username cannot be changed</small>
               </div>
 
               <!-- Full Name -->
@@ -90,6 +90,7 @@
                 <div *ngIf="fullName?.invalid && fullName?.touched" class="invalid-feedback d-block">
                   <span *ngIf="fullName?.errors?.['required']">Full name is required</span>
                   <span *ngIf="fullName?.errors?.['minlength']">Full name must be at least 2 characters</span>
+                  <span *ngIf="fullName?.errors?.['maxlength']">Full name cannot exceed 200 characters</span>
                 </div>
               </div>
 
@@ -112,6 +113,7 @@
                 <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback d-block">
                   <span *ngIf="email?.errors?.['required']">Email is required</span>
                   <span *ngIf="email?.errors?.['email']">Please enter a valid email address</span>
+                  <span *ngIf="email?.errors?.['maxlength']">Email cannot exceed 256 characters</span>
                 </div>
               </div>
 
@@ -128,8 +130,14 @@
                     id="phoneNumber"
                     formControlName="phoneNumber"
                     placeholder="Enter phone number"
+                    [ngClass]="{
+                      'is-invalid': phoneNumber?.invalid && phoneNumber?.touched
+                    }"
                   />
                 </c-input-group>
+                <div *ngIf="phoneNumber?.invalid && phoneNumber?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="phoneNumber?.errors?.['maxlength']">Phone number cannot exceed 20 characters</span>
+                </div>
               </div>
 
               <!-- Address -->
@@ -145,8 +153,41 @@
                     id="address"
                     formControlName="address"
                     placeholder="Enter address"
+                    [ngClass]="{
+                      'is-invalid': address?.invalid && address?.touched
+                    }"
                   />
                 </c-input-group>
+                <div *ngIf="address?.invalid && address?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="address?.errors?.['maxlength']">Address cannot exceed 500 characters</span>
+                </div>
+              </div>
+
+              <!-- Image URL -->
+              <div class="mb-3">
+                <label cLabel for="imgPath">Profile Image URL</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-image"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="imgPath"
+                    formControlName="imgPath"
+                    placeholder="https://example.com/avatar.png"
+                    [ngClass]="{
+                      'is-invalid': imgPath?.invalid && imgPath?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="imgPath?.invalid && imgPath?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="imgPath?.errors?.['maxlength']">Image URL cannot exceed 500 characters</span>
+                  <span *ngIf="imgPath?.errors?.['pattern']">Image URL must start with http:// or https://</span>
+                </div>
+                <div class="mt-2">
+                  <app-image-preview [src]="imgPath?.value" size="md" fallbackIcon="cil-user"></app-image-preview>
+                </div>
               </div>
 
               <!-- Password (only for create) -->
@@ -171,6 +212,7 @@
                   <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback d-block">
                     <span *ngIf="password?.errors?.['required']">Password is required</span>
                     <span *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters</span>
+                    <span *ngIf="password?.errors?.['maxlength']">Password cannot exceed 100 characters</span>
                   </div>
                 </div>
 

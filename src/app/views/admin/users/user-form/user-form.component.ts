@@ -20,6 +20,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { UserService } from '../../../../services/user.service';
 import { AuthService } from '../../../../services/auth.service';
 import { CreateUserRequest, UpdateUserRequest } from '../../../../models/user.models';
+import { ImagePreviewComponent } from '../../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-user-form',
@@ -40,7 +41,8 @@ import { CreateUserRequest, UpdateUserRequest } from '../../../../models/user.mo
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,
-    FormLabelDirective
+    FormLabelDirective,
+    ImagePreviewComponent
   ]
 })
 export class UserFormComponent implements OnInit, OnDestroy {
@@ -63,12 +65,21 @@ export class UserFormComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.userForm = this.fb.group({
-      userName: ['', [Validators.required, Validators.minLength(3)]],
-      fullName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      address: [''],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      userName: ['', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        Validators.pattern(/^[A-Za-z0-9._-]+$/)
+      ]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(200)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
+      phoneNumber: ['', [Validators.maxLength(20)]],
+      address: ['', [Validators.maxLength(500)]],
+      imgPath: ['', [
+        Validators.maxLength(500),
+        Validators.pattern(/^https?:\/\/.+/)
+      ]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
       confirmPassword: ['', [Validators.required]]
     }, {
       validators: this.passwordMatchValidator
@@ -128,7 +139,8 @@ export class UserFormComponent implements OnInit, OnDestroy {
             fullName: user.fullName,
             email: user.email,
             phoneNumber: user.phoneNumber || '',
-            address: user.address || ''
+            address: user.address || '',
+            imgPath: user.imgPath || ''
           });
         } else {
           this.errorMessage = response.message || 'Failed to load user.';
@@ -164,12 +176,23 @@ export class UserFormComponent implements OnInit, OnDestroy {
     if (this.isEditMode && this.userId) {
       const updateData: UpdateUserRequest = {
         id: this.userId,
+        userName: formData.userName,
         fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address
+        phoneNumber: formData.phoneNumber || undefined,
+        address: formData.address || undefined,
+        imgPath: formData.imgPath || undefined
       };
 
-      this.userService.updateUser(updateData).subscribe({
+      // The backend accepts userName on update now; include it if changed.
+      // The UpdateUserRequest interface doesn't declare userName yet, so cast
+      // through a small inline type. Once the interface is extended, this
+      // cast can be removed.
+      const updatePayload = {
+        ...updateData,
+        userName: formData.userName
+      };
+
+      this.userService.updateUser(updatePayload as any).subscribe({
         next: (response) => {
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -197,9 +220,10 @@ export class UserFormComponent implements OnInit, OnDestroy {
         userName: formData.userName,
         fullName: formData.fullName,
         email: formData.email,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: formData.phoneNumber || undefined,
         password: formData.password,
-        address: formData.address
+        address: formData.address || undefined,
+        imgPath: formData.imgPath || undefined
       };
 
       this.userService.createUser(createData).subscribe({
@@ -233,6 +257,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
   get email() { return this.userForm.get('email'); }
   get phoneNumber() { return this.userForm.get('phoneNumber'); }
   get address() { return this.userForm.get('address'); }
+  get imgPath() { return this.userForm.get('imgPath'); }
   get password() { return this.userForm.get('password'); }
   get confirmPassword() { return this.userForm.get('confirmPassword'); }
 
