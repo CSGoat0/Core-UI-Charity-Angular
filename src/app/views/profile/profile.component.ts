@@ -202,7 +202,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       fullName: this.profileForm.get('fullName')?.value,
       userName: this.profileForm.get('userName')?.value,
       email: this.user.email,
-      phoneNumber: this.profileForm.get('phoneNumber')?.value,
+      phoneNumber: this.profileForm.get('phoneNumber')?.value || undefined,
       imgPath: this.profileForm.get('imgPath')?.value || undefined
     };
 
