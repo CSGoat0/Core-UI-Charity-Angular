@@ -13,7 +13,8 @@ import {
   BadgeComponent,
   NavComponent,
   NavItemComponent,
-  NavLinkDirective
+  NavLinkDirective,
+  TooltipDirective
 } from '@coreui/angular';
 import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
@@ -41,6 +42,7 @@ import { DonateModalComponent } from '../../donations/donate-modal/donate-modal.
     NavComponent,
     NavItemComponent,
     NavLinkDirective,
+    TooltipDirective,
     DonateModalComponent
   ]
 })

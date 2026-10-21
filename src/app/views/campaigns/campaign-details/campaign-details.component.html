@@ -28,6 +28,8 @@
                   size="sm"
                   (click)="openDonateModal()"
                   *ngIf="campaign && !campaign.isDeleted"
+                  [disabled]="donationsDisabled"
+                  [cTooltip]="donationsDisabled ? 'Donations are currently unavailable for this campaign' : 'Donate to this campaign'"
                 >
                   <svg cIcon name="cil-heart" class="me-1"></svg>
                   Donate
@@ -130,6 +132,14 @@
 
               <!-- Details Tab -->
               <div *ngIf="activeTab === 'details'">
+
+                <!-- Donations Disabled Banner -->
+                <c-alert *ngIf="donationsDisabled" color="warning" [dismissible]="false" class="mb-3">
+                  <svg cIcon name="cil-warning" class="me-1"></svg>
+                  <strong>Donations are currently unavailable.</strong>
+                  This campaign's organization has not configured payment information yet, so donations cannot be accepted right now. Please check back later.
+                </c-alert>
+
                 <!-- Progress Section -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between">

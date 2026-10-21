@@ -152,6 +152,14 @@
                     <c-badge [color]="getStatusBadgeColor(campaign.status)">
                       {{ getStatusText(campaign.status) }}
                     </c-badge>
+                    <c-badge
+                      *ngIf="!campaign.canReceiveDonations"
+                      color="warning"
+                      class="ms-2"
+                      cTooltip="This campaign's organization has no valid payment info configured"
+                    >
+                      Donations disabled
+                    </c-badge>
                   </td>
                   <td>{{ campaign.target | currency }}</td>
                   <td>{{ campaign.achieved | currency }}</td>
