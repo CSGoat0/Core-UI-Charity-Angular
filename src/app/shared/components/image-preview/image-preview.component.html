@@ -1,4 +1,4 @@
-<div [ngClass]="['image-preview', 'image-preview--' + size]">
+<div [ngClass]="['image-preview', 'image-preview--' + size, showTextFallback ? 'image-preview--with-text' : '']">
   <img
     *ngIf="showImage"
     [src]="src!"
@@ -12,4 +12,9 @@
   <div *ngIf="!showImage && !showTextFallback" class="image-preview__fallback">
     <svg [cIcon]="fallbackIcon" class="image-preview__icon"></svg>
   </div>
+  <span
+    *ngIf="hasStatus"
+    [ngClass]="['image-preview__status', 'image-preview__status--' + status]"
+    aria-hidden="true"
+  ></span>
 </div>

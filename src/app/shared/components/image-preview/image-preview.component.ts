@@ -12,8 +12,9 @@ export class ImagePreviewComponent implements OnChanges {
   @Input() src: string | null = null;
   @Input() fallbackIcon: string = 'cil-image';
   @Input() fallbackText: string | null = null;
-  @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() size: 'sm' | 'xs' | 'md' | 'lg' = 'md';
   @Input() alt: string = 'Preview';
+  @Input() status: 'none' | 'success' | 'danger' | 'warning' | 'info' = 'none';
 
   imageFailed = false;
 
@@ -36,5 +37,9 @@ export class ImagePreviewComponent implements OnChanges {
 
   get showTextFallback(): boolean {
     return !this.showImage && !!this.fallbackText;
+  }
+
+  get hasStatus(): boolean {
+    return this.status !== 'none';
   }
 }

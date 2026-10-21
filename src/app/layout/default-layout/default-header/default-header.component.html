@@ -47,11 +47,12 @@
   <c-dropdown [popperOptions]="{ placement: 'bottom-start' }" variant="nav-item">
     <button [caret]="false" cDropdownToggle class="py-0 pe-0" aria-label="Open user menu">
       <app-image-preview
-        size="sm"
-        [src]="getUserImgPath()"
-        [fallbackText]="getUserInitials()"
-        alt="User avatar"
-      ></app-image-preview>
+      size="xs"
+      [src]="getUserImgPath()"
+      [fallbackText]="getUserInitials()"
+      status="success"
+      alt="User avatar"
+    ></app-image-preview>
     </button>
     <ul cDropdownMenu class="pt-0 w-auto">
       <li>
