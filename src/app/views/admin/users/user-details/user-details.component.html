@@ -120,41 +120,67 @@
               <!-- Details Tab -->
               <div *ngIf="activeTab === 'details'">
                 <c-row>
-                  <c-col md="6" class="mb-2">
-                    <strong>ID:</strong> {{ user.id }}
+                  <!-- Avatar / Placeholder -->
+                  <c-col md="3" class="mb-3 mb-md-0 text-center">
+                    <div
+                      class="d-inline-flex align-items-center justify-content-center bg-body-secondary rounded-circle"
+                      style="width: 160px; height: 160px; overflow: hidden;"
+                    >
+                      <app-image-preview
+                        *ngIf="user.imgPath"
+                        [src]="user.imgPath"
+                        size="lg"
+                      ></app-image-preview>
+                      <svg
+                        *ngIf="!user.imgPath"
+                        cIcon
+                        name="cil-user"
+                        size="4xl"
+                        class="text-body-tertiary"
+                      ></svg>
+                    </div>
                   </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Username:</strong> {{ user.userName }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Full Name:</strong> {{ user.fullName || 'Not provided' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Email:</strong> {{ user.email }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Phone Number:</strong> {{ user.phoneNumber || 'Not provided' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Address:</strong> {{ user.address || 'Not provided' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Registration Date:</strong> {{ user.registrationDate | date:'medium' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Last Updated:</strong> {{ user.updatedOn ? (user.updatedOn | date:'medium') : 'Never' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Email Confirmed:</strong> {{ user.emailConfirmed ? 'Yes' : 'No' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Two-Factor Enabled:</strong> {{ user.twoFactorEnabled ? 'Yes' : 'No' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Lockout Enabled:</strong> {{ user.lockoutEnabled ? 'Yes' : 'No' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Access Failed Count:</strong> {{ user.accessFailedCount }}
+
+                  <!-- Summary Fields -->
+                  <c-col md="9">
+                    <c-row>
+                      <c-col md="6" class="mb-2">
+                        <strong>ID:</strong> {{ user.id }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Username:</strong> {{ user.userName }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Full Name:</strong> {{ user.fullName || 'Not provided' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Email:</strong> {{ user.email }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Phone Number:</strong> {{ user.phoneNumber || 'Not provided' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Address:</strong> {{ user.address || 'Not provided' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Registration Date:</strong> {{ user.registrationDate | date:'medium' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Last Updated:</strong> {{ user.updatedOn ? (user.updatedOn | date:'medium') : 'Never' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Email Confirmed:</strong> {{ user.emailConfirmed ? 'Yes' : 'No' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Two-Factor Enabled:</strong> {{ user.twoFactorEnabled ? 'Yes' : 'No' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Lockout Enabled:</strong> {{ user.lockoutEnabled ? 'Yes' : 'No' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Access Failed Count:</strong> {{ user.accessFailedCount }}
+                      </c-col>
+                    </c-row>
                   </c-col>
                 </c-row>
               </div>
