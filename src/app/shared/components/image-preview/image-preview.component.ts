@@ -12,7 +12,7 @@ export class ImagePreviewComponent implements OnChanges {
   @Input() src: string | null = null;
   @Input() fallbackIcon: string = 'cil-image';
   @Input() fallbackText: string | null = null;
-  @Input() size: 'sm' | 'xs' | 'md' | 'lg' = 'md';
+  @Input() size: 'sm' | 'xs' | 'md' | 'lg' | 'xl' = 'md';
   @Input() alt: string = 'Preview';
   @Input() status: 'none' | 'success' | 'danger' | 'warning' | 'info' = 'none';
 

@@ -122,23 +122,18 @@
                 <c-row>
                   <!-- Avatar / Placeholder -->
                   <c-col md="3" class="mb-3 mb-md-0 text-center">
-                    <div
-                      class="d-inline-flex align-items-center justify-content-center bg-body-secondary rounded-circle"
-                      style="width: 160px; height: 160px; overflow: hidden;"
-                    >
-                      <app-image-preview
-                        *ngIf="user.imgPath"
-                        [src]="user.imgPath"
-                        size="lg"
-                      ></app-image-preview>
-                      <svg
-                        *ngIf="!user.imgPath"
-                        cIcon
-                        name="cil-user"
-                        size="4xl"
-                        class="text-body-tertiary"
-                      ></svg>
-                    </div>
+                    <app-image-preview
+                      *ngIf="user.imgPath"
+                      [src]="user.imgPath"
+                      size="lg"
+                      shape="circle"
+                    ></app-image-preview>
+                    <app-image-preview
+                      *ngIf="!user.imgPath"
+                      fallbackIcon="cil-user"
+                      size="lg"
+                      shape="circle"
+                    ></app-image-preview>
                   </c-col>
 
                   <!-- Summary Fields -->

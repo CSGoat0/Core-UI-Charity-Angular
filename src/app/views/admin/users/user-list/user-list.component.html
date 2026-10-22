@@ -229,26 +229,23 @@
                 <c-card class="h-100 shadow-sm">
                   <c-card-body class="d-flex flex-column">
 
-                    <!-- Avatar + Status Overlay -->
-                    <div class="d-flex align-items-start mb-3">
-                      <div
-                        class="d-flex align-items-center justify-content-center bg-body-secondary rounded-circle me-3"
-                        style="width: 56px; height: 56px; overflow: hidden; flex-shrink: 0;"
-                      >
+                    <!-- Avatar + Header (constrained to prevent overflow) -->
+                    <div class="d-flex align-items-start mb-3" style="min-width: 0; overflow: hidden;">
+                      <div class="me-3" style="flex-shrink: 0;">
                         <app-image-preview
                           *ngIf="user.imgPath"
                           [src]="user.imgPath"
-                          size="sm"
+                          size="xl"
+                          shape="circle"
                         ></app-image-preview>
-                        <svg
+                        <app-image-preview
                           *ngIf="!user.imgPath"
-                          cIcon
-                          name="cil-user"
-                          size="lg"
-                          class="text-body-tertiary"
-                        ></svg>
+                          fallbackIcon="cil-user"
+                          size="xl"
+                          shape="circle"
+                        ></app-image-preview>
                       </div>
-                      <div class="flex-grow-1 min-w-0">
+                      <div class="flex-grow-1" style="min-width: 0;">
                         <h5 class="card-title mb-1 text-truncate" [title]="user.fullName || user.userName">
                           {{ user.fullName || user.userName }}
                         </h5>
@@ -290,53 +287,19 @@
 
                     <!-- Actions -->
                     <div class="mt-auto d-flex justify-content-end gap-2 pt-3 border-top">
-                      <button
-                        cButton
-                        color="info"
-                        size="sm"
-                        (click)="viewUser(user.id)"
-                        cTooltip="View"
-                      >
+                      <button cButton color="info" size="sm" (click)="viewUser(user.id)" cTooltip="View">
                         <svg cIcon name="cil-magnifying-glass"></svg>
                       </button>
-                      <button
-                        cButton
-                        color="warning"
-                        size="sm"
-                        (click)="editUser(user.id)"
-                        *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)"
-                        cTooltip="Edit"
-                      >
+                      <button cButton color="warning" size="sm" (click)="editUser(user.id)" *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)" cTooltip="Edit">
                         <svg cIcon name="cil-pencil"></svg>
                       </button>
-                      <button
-                        cButton
-                        color="secondary"
-                        size="sm"
-                        (click)="openRoleModal(user)"
-                        *ngIf="canManage && !user.isDeleted"
-                        cTooltip="Manage Roles"
-                      >
+                      <button cButton color="secondary" size="sm" (click)="openRoleModal(user)" *ngIf="canManage && !user.isDeleted" cTooltip="Manage Roles">
                         <svg cIcon name="cil-shield-alt"></svg>
                       </button>
-                      <button
-                        cButton
-                        color="success"
-                        size="sm"
-                        (click)="restoreUser(user.id)"
-                        *ngIf="user.isDeleted && canDelete"
-                        cTooltip="Restore"
-                      >
+                      <button cButton color="success" size="sm" (click)="restoreUser(user.id)" *ngIf="user.isDeleted && canDelete" cTooltip="Restore">
                         <svg cIcon name="cil-arrow-circle-left"></svg>
                       </button>
-                      <button
-                        cButton
-                        color="danger"
-                        size="sm"
-                        (click)="deleteUser(user.id)"
-                        *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)"
-                        cTooltip="Delete"
-                      >
+                      <button cButton color="danger" size="sm" (click)="deleteUser(user.id)" *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)" cTooltip="Delete">
                         <svg cIcon name="cil-trash"></svg>
                       </button>
                     </div>
