@@ -140,76 +140,103 @@
                   This campaign's organization has not configured payment information yet, so donations cannot be accepted right now. Please check back later.
                 </c-alert>
 
-                <!-- Progress Section -->
-                <div class="mb-4">
-                  <div class="d-flex justify-content-between">
-                    <span class="fw-semibold">Progress</span>
-                    <span class="fw-semibold">
-                      {{ campaign.achieved | currency }} / {{ campaign.target | currency }}
-                      ({{ getProgressPercentage().toFixed(1) }}%)
-                    </span>
-                  </div>
-                  <div class="progress mt-2" style="height: 20px;">
-                    <div
-                      class="progress-bar bg-success"
-                      role="progressbar"
-                      [style.width.%]="getProgressPercentage()"
-                      [attr.aria-valuenow]="getProgressPercentage()"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    >
-                      {{ getProgressPercentage().toFixed(0) }}%
-                    </div>
-                  </div>
-                  <div class="small text-body-secondary mt-1">
-                    <span *ngIf="campaign.achievementPercentage !== undefined && campaign.achievementPercentage !== null">
-                      Achievement: {{ campaign.achievementPercentage.toFixed(1) }}%
-                    </span>
-                    <span *ngIf="campaign.remainingAmount !== undefined && campaign.remainingAmount !== null" class="ms-3">
-                      Remaining: {{ campaign.remainingAmount | currency }}
-                    </span>
-                    <span *ngIf="campaign.daysRemaining !== undefined && campaign.daysRemaining !== null" class="ms-3">
-                      <span *ngIf="campaign.daysRemaining > 0; else expired">
-                        Days Left: {{ campaign.daysRemaining }}
-                      </span>
-                      <ng-template #expired>
-                        <span class="text-danger">Expired</span>
-                      </ng-template>
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Details Grid -->
                 <c-row>
-                  <c-col md="6" class="mb-2">
-                    <strong>ID:</strong> {{ campaign.id }}
+                  <!-- Campaign Image / Placeholder -->
+                  <c-col md="3" class="mb-3 mb-md-0">
+                    <div
+                      class="d-flex align-items-center justify-content-center bg-body-secondary rounded"
+                      style="height: 160px; width: 100%; overflow: hidden;"
+                    >
+                      <app-image-preview
+                        *ngIf="campaign.imgPath"
+                        [src]="campaign.imgPath"
+                        size="lg"
+                      ></app-image-preview>
+                      <svg
+                        *ngIf="!campaign.imgPath"
+                        cIcon
+                        name="cil-bullhorn"
+                        size="4xl"
+                        class="text-body-tertiary"
+                      ></svg>
+                    </div>
                   </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Title:</strong> {{ campaign.title }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Description:</strong> {{ campaign.description || 'Not provided' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Type:</strong> {{ campaign.type }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Organization:</strong> {{ campaign.organizationId }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Status:</strong>
-                    <c-badge [color]="getStatusBadgeColor(campaign.status)">
-                      {{ getStatusText(campaign.status) }}
-                    </c-badge>
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Registration Date:</strong> {{ campaign.registrationDate | date:'medium' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Deadline:</strong> {{ campaign.deadline | date:'mediumDate' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Last Updated:</strong> {{ campaign.updatedOn ? (campaign.updatedOn | date:'medium') : 'Never' }}
+
+                  <!-- Progress + Details -->
+                  <c-col md="9">
+
+                    <!-- Progress Section -->
+                    <div class="mb-4">
+                      <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">Progress</span>
+                        <span class="fw-semibold">
+                          {{ campaign.achieved | currency }} / {{ campaign.target | currency }}
+                          ({{ getProgressPercentage().toFixed(1) }}%)
+                        </span>
+                      </div>
+                      <div class="progress mt-2" style="height: 20px;">
+                        <div
+                          class="progress-bar bg-success"
+                          role="progressbar"
+                          [style.width.%]="getProgressPercentage()"
+                          [attr.aria-valuenow]="getProgressPercentage()"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          {{ getProgressPercentage().toFixed(0) }}%
+                        </div>
+                      </div>
+                      <div class="small text-body-secondary mt-1">
+                        <span *ngIf="campaign.achievementPercentage !== undefined && campaign.achievementPercentage !== null">
+                          Achievement: {{ campaign.achievementPercentage.toFixed(1) }}%
+                        </span>
+                        <span *ngIf="campaign.remainingAmount !== undefined && campaign.remainingAmount !== null" class="ms-3">
+                          Remaining: {{ campaign.remainingAmount | currency }}
+                        </span>
+                        <span *ngIf="campaign.daysRemaining !== undefined && campaign.daysRemaining !== null" class="ms-3">
+                          <span *ngIf="campaign.daysRemaining > 0; else expired">
+                            Days Left: {{ campaign.daysRemaining }}
+                          </span>
+                          <ng-template #expired>
+                            <span class="text-danger">Expired</span>
+                          </ng-template>
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <c-row>
+                      <c-col md="6" class="mb-2">
+                        <strong>ID:</strong> {{ campaign.id }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Title:</strong> {{ campaign.title }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Description:</strong> {{ campaign.description || 'Not provided' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Type:</strong> {{ campaign.type }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Organization:</strong> {{ campaign.organizationId }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Status:</strong>
+                        <c-badge [color]="getStatusBadgeColor(campaign.status)">
+                          {{ getStatusText(campaign.status) }}
+                        </c-badge>
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Registration Date:</strong> {{ campaign.registrationDate | date:'medium' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Deadline:</strong> {{ campaign.deadline | date:'mediumDate' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Last Updated:</strong> {{ campaign.updatedOn ? (campaign.updatedOn | date:'medium') : 'Never' }}
+                      </c-col>
+                    </c-row>
                   </c-col>
                 </c-row>
               </div>
