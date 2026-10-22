@@ -2,6 +2,7 @@ export interface Organization {
   id: number;
   name: string;
   address: string | null;
+  imgPath: string | null;
   isDeleted: boolean;
   registrationDate: Date;
   updatedOn: Date | null;
@@ -112,11 +113,13 @@ export interface PaginatedResponse<T> {
 export interface CreateOrganizationRequest {
   name: string;
   address?: string;
+  imgPath?: string;
 }
 
 export interface UpdateOrganizationRequest {
   name?: string;
   address?: string;
+  imgPath?: string;
 }
 
 export interface OrganizationAdmin {
