@@ -26,6 +26,7 @@ import { OrganizationService } from '../../../services/organization.service';
 import { AuthService } from '../../../services/auth.service';
 import { isSharedCampaign, isSoloCampaign } from '../../../models/campaign.models';
 import { OrganizationDropDown } from '../../../models/organization.models';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-campaign-form',
@@ -50,7 +51,8 @@ import { OrganizationDropDown } from '../../../models/organization.models';
     DropdownComponent,
     DropdownToggleDirective,
     DropdownMenuDirective,
-    DropdownItemDirective
+    DropdownItemDirective,
+    ImagePreviewComponent
   ]
 })
 export class CampaignFormComponent implements OnInit, OnDestroy {
@@ -85,7 +87,11 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
     this.campaignForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', [Validators.maxLength(1000)]],
-      target: [0, [Validators.required, Validators.min(1)]],
+      imgPath: ['', [
+        Validators.maxLength(500),
+        Validators.pattern(/^https?:\/\/.+/)
+      ]],
+      target: [0, [Validators.required, Validators.min(1), Validators.max(1_000_000_000)]],
       type: ['Solo', [Validators.required]],
       organizationId: ['', [Validators.required]],
       deadline: ['', [Validators.required]],
@@ -154,6 +160,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
           this.campaignForm.patchValue({
             title: data.title,
             description: data.description || '',
+            imgPath: data.imgPath || '',
             target: data.target,
             type: data.type,
             organizationId: data.organizationId,
@@ -262,6 +269,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
           id: this.campaignId,
           title: formData.title,
           description: formData.description,
+          imgPath: formData.imgPath || undefined,
           target: formData.target,
           type: formData.type,
           organizationId: formData.organizationId
@@ -280,6 +288,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
         const createData = {
           title: formData.title,
           description: formData.description,
+          imgPath: formData.imgPath || undefined,
           target: formData.target,
           type: formData.type,
           startDate: new Date(),
@@ -294,6 +303,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
         const createData = {
           title: formData.title,
           description: formData.description,
+          imgPath: formData.imgPath || undefined,
           target: formData.target,
           type: formData.type,
           startDate: new Date(),
@@ -334,6 +344,7 @@ export class CampaignFormComponent implements OnInit, OnDestroy {
 
   get title() { return this.campaignForm.get('title'); }
   get description() { return this.campaignForm.get('description'); }
+  get imgPath() { return this.campaignForm.get('imgPath'); }
   get target() { return this.campaignForm.get('target'); }
   get type() { return this.campaignForm.get('type'); }
   get organizationId() { return this.campaignForm.get('organizationId'); }

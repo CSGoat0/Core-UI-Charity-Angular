@@ -188,6 +188,14 @@ export class CampaignInvitesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Validate expiresInDays matches the backend's [Range(1, 365)] on SendInviteRequestDto.
+    const days = Number(this.expiresInDays);
+    if (!Number.isInteger(days) || days < 1 || days > 365) {
+      this.errorMessage = 'Expires In must be between 1 and 365 days.';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.isSendingInvite = true;
     this.errorMessage = null;
     this.successMessage = null;
@@ -195,7 +203,7 @@ export class CampaignInvitesComponent implements OnInit, OnDestroy {
 
     this.campaignService.sendInvite(this.campaignId, {
       organizationId: this.selectedOrganizationId,
-      expiresInDays: this.expiresInDays
+      expiresInDays: days
     }).subscribe({
       next: (response) => {
         this.isSendingInvite = false;
