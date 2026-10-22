@@ -6,53 +6,26 @@
   background-color: var(--cui-tertiary-bg);
   border: 1px solid var(--cui-border-color);
   border-radius: 0.375rem;
-  overflow: hidden; /* Changed from visible to hidden so images and icons don't spill out */
+  /* overflow: hidden; REMOVED - so the status dot can overflow */
   flex-shrink: 0;
 
-  &--sm {
-    width: 32px;
-    height: 32px;
-  }
-
-  &--xs {
-    width: 40px;
-    height: 40px;
-  }
-
-  &--md {
-    width: 64px;
-    height: 64px;
-  }
-
-  &--lg {
-    width: 128px;
-    height: 128px;
-  }
-
-  &--xl {
-    width: 160px;
-    height: 160px;
-  }
+  &--sm { width: 32px; height: 32px; }
+  &--xs { width: 40px; height: 40px; }
+  &--md { width: 64px; height: 64px; }
+  &--lg { width: 128px; height: 128px; }
+  &--xl { width: 160px; height: 160px; }
 
   // Shape modifiers
-  &--square {
-    border-radius: 0.375rem;
-  }
-
-  &--circle {
-    border-radius: 50%;
-  }
-
-  // When used with initials fallback, match the c-avatar rounded-1 look
-  &--with-text {
-    border-radius: 0.25rem;
-  }
+  &--square { border-radius: 0.375rem; }
+  &--circle { border-radius: 50%; }
+  &--with-text { border-radius: 0.25rem; }
 
   &__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: inherit;
+    overflow: hidden; /* Added here to keep the image rounded */
   }
 
   &__fallback {
@@ -63,6 +36,7 @@
     height: 100%;
     color: var(--cui-secondary-color);
     border-radius: inherit;
+    overflow: hidden; /* Added here to keep the fallback background rounded */
   }
 
   &__fallback-text {
@@ -79,6 +53,7 @@
     letter-spacing: 0.02em;
     user-select: none;
     border-radius: inherit;
+    overflow: hidden;
   }
 
   &__icon {
