@@ -42,6 +42,7 @@ import { User } from '../../../models/user.models';
 import { UserDto } from '../../../models/auth.models';
 import { PaymentInfoFormComponent } from '../payment-info/payment-info-form/payment-info-form.component';
 import { ContactMethodFormComponent } from '../contact-method/contact-method-form/contact-method-form.component';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-organization-details',
@@ -72,7 +73,8 @@ import { ContactMethodFormComponent } from '../contact-method/contact-method-for
     TooltipDirective,
     TableDirective,
     PaymentInfoFormComponent,
-    ContactMethodFormComponent
+    ContactMethodFormComponent,
+    ImagePreviewComponent
   ]
 })
 export class OrganizationDetailsComponent implements OnInit, OnDestroy {

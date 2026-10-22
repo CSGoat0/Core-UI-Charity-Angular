@@ -141,41 +141,67 @@
               <!-- Details Tab -->
               <div *ngIf="activeTab === 'details'">
                 <c-row>
-                  <c-col md="6" class="mb-2">
-                    <strong>ID:</strong> {{ organization.id }}
+                  <!-- Logo / Placeholder -->
+                  <c-col md="3" class="mb-3 mb-md-0">
+                    <div
+                      class="d-flex align-items-center justify-content-center bg-body-secondary rounded"
+                      style="height: 160px; width: 100%; overflow: hidden;"
+                    >
+                      <app-image-preview
+                        *ngIf="organization.imgPath"
+                        [src]="organization.imgPath"
+                        size="lg"
+                      ></app-image-preview>
+                      <svg
+                        *ngIf="!organization.imgPath"
+                        cIcon
+                        name="cil-building"
+                        size="4xl"
+                        class="text-body-tertiary"
+                      ></svg>
+                    </div>
                   </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Name:</strong> {{ organization.name }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Address:</strong> {{ organization.address || 'Not provided' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Registration Date:</strong> {{ organization.registrationDate | date:'medium' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Last Updated:</strong> {{ organization.updatedOn ? (organization.updatedOn | date:'medium') : 'Never' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Status:</strong>
-                    <c-badge [color]="organization.isDeleted ? 'danger' : 'success'">
-                      {{ organization.isDeleted ? 'Deleted' : 'Active' }}
-                    </c-badge>
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Admin:</strong> {{ organization.adminUserFullName || organization.adminUserName || 'Not assigned' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Admin Email:</strong> {{ organization.adminUserEmail || 'Not assigned' }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Total Campaigns:</strong> {{ organization.totalCampaignsCount }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Solo Campaigns:</strong> {{ organization.soloCampaignsCount }}
-                  </c-col>
-                  <c-col md="6" class="mb-2">
-                    <strong>Shared Campaigns:</strong> {{ organization.sharedCampaignsCount }}
+
+                  <!-- Summary Fields -->
+                  <c-col md="9">
+                    <c-row>
+                      <c-col md="6" class="mb-2">
+                        <strong>ID:</strong> {{ organization.id }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Name:</strong> {{ organization.name }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Address:</strong> {{ organization.address || 'Not provided' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Registration Date:</strong> {{ organization.registrationDate | date:'medium' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Last Updated:</strong> {{ organization.updatedOn ? (organization.updatedOn | date:'medium') : 'Never' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Status:</strong>
+                        <c-badge [color]="organization.isDeleted ? 'danger' : 'success'">
+                          {{ organization.isDeleted ? 'Deleted' : 'Active' }}
+                        </c-badge>
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Admin:</strong> {{ organization.adminUserFullName || organization.adminUserName || 'Not assigned' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Admin Email:</strong> {{ organization.adminUserEmail || 'Not assigned' }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Total Campaigns:</strong> {{ organization.totalCampaignsCount }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Solo Campaigns:</strong> {{ organization.soloCampaignsCount }}
+                      </c-col>
+                      <c-col md="6" class="mb-2">
+                        <strong>Shared Campaigns:</strong> {{ organization.sharedCampaignsCount }}
+                      </c-col>
+                    </c-row>
                   </c-col>
                 </c-row>
               </div>
