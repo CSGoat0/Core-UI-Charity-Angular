@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   ButtonDirective,
+  ButtonGroupComponent,
   CardBodyComponent,
   CardComponent,
   CardHeaderComponent,
@@ -29,6 +30,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { UserService } from '../../../../services/user.service';
 import { AuthService } from '../../../../services/auth.service';
 import { User, PaginatedResponse, PaginationParameters, availableRoles } from '../../../../models/user.models';
+import { ImagePreviewComponent } from '../../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-user-list',
@@ -44,6 +46,7 @@ import { User, PaginatedResponse, PaginationParameters, availableRoles } from '.
     CardBodyComponent,
     TableDirective,
     ButtonDirective,
+    ButtonGroupComponent,
     RouterLink,
     IconDirective,
     PaginationComponent,
@@ -58,7 +61,8 @@ import { User, PaginatedResponse, PaginationParameters, availableRoles } from '.
     ModalComponent,
     ModalBodyComponent,
     ModalFooterComponent,
-    ModalHeaderComponent
+    ModalHeaderComponent,
+    ImagePreviewComponent
   ]
 })
 export class UserListComponent implements OnInit, OnDestroy {
@@ -76,6 +80,10 @@ export class UserListComponent implements OnInit, OnDestroy {
   totalPages = 0;
   searchTerm: string = '';
   includeDeleted = false;
+
+  // View Mode State (defaults to card)
+  viewMode: 'table' | 'card' = 'card';
+  private readonly VIEW_MODE_KEY = 'users-view-mode';
 
   // Role management
   selectedUser: User | null = null;
@@ -97,6 +105,7 @@ export class UserListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadViewMode();
     this.loadUsers();
   }
 
@@ -105,6 +114,22 @@ export class UserListComponent implements OnInit, OnDestroy {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+  }
+
+  private loadViewMode(): void {
+    const savedMode = localStorage.getItem(this.VIEW_MODE_KEY);
+    if (savedMode === 'table' || savedMode === 'card') {
+      this.viewMode = savedMode;
+    } else {
+      this.viewMode = 'card';
+      localStorage.setItem(this.VIEW_MODE_KEY, this.viewMode);
+    }
+  }
+
+  setViewMode(mode: 'table' | 'card'): void {
+    this.viewMode = mode;
+    localStorage.setItem(this.VIEW_MODE_KEY, mode);
+    this.cdr.detectChanges();
   }
 
   loadUsers(): void {

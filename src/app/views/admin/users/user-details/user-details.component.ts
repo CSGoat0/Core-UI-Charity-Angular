@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ImagePreviewComponent } from '../../../../shared/components/image-preview/image-preview.component';
 import {
   ButtonDirective,
   CardBodyComponent,
@@ -37,7 +38,8 @@ import { User } from '../../../../models/user.models';
     IconDirective,
     NavComponent,
     NavItemComponent,
-    NavLinkDirective
+    NavLinkDirective,
+    ImagePreviewComponent
   ]
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {

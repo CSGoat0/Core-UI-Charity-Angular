@@ -1,4 +1,4 @@
-<div [ngClass]="['image-preview', 'image-preview--' + size, showTextFallback ? 'image-preview--with-text' : '']">
+<div [ngClass]="containerClasses">
   <img
     *ngIf="showImage"
     [src]="src!"
@@ -9,8 +9,8 @@
   <span *ngIf="showTextFallback" class="image-preview__fallback-text">
     {{ fallbackText }}
   </span>
-  <div *ngIf="!showImage && !showTextFallback" class="image-preview__fallback">
-    <svg [cIcon]="fallbackIcon" class="image-preview__icon"></svg>
+  <div *ngIf="!showImage && !fallbackText" class="image-preview__fallback">
+    <svg cIcon [name]="fallbackIcon" class="image-preview__icon"></svg>
   </div>
   <span
     *ngIf="hasStatus"

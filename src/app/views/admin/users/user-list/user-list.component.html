@@ -4,12 +4,36 @@
       <c-col lg="12">
         <c-card>
           <c-card-header>
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <h5 class="mb-0">
                 <svg cIcon name="cil-people" class="me-2"></svg>
                 Users
               </h5>
-              <div>
+              <div class="d-flex gap-2">
+                <!-- View Toggle -->
+                <c-button-group role="group" aria-label="View mode toggle">
+                  <button
+                    cButton
+                    color="secondary"
+                    variant="outline"
+                    [active]="viewMode === 'table'"
+                    (click)="setViewMode('table')"
+                    cTooltip="Table View"
+                  >
+                    <svg cIcon name="cil-list"></svg>
+                  </button>
+                  <button
+                    cButton
+                    color="secondary"
+                    variant="outline"
+                    [active]="viewMode === 'card'"
+                    (click)="setViewMode('card')"
+                    cTooltip="Card View"
+                  >
+                    <svg cIcon name="cil-grid"></svg>
+                  </button>
+                </c-button-group>
+
                 <button
                   cButton
                   color="primary"
@@ -80,121 +104,209 @@
               </div>
             </div>
 
-            <!-- Table -->
+            <!-- Empty State -->
             <div *ngIf="!isLoading && users.length === 0" class="text-center py-4">
               <p class="text-body-secondary">No users found.</p>
             </div>
 
-            <table cTable striped *ngIf="!isLoading && users.length > 0">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Roles</th>
-                  <th>Status</th>
-                  <th>Email</th>
-                  <th class="text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let user of users">
-                  <td>{{ user.id | slice:0:8 }}...</td>
-                  <td>
-                    <a href="javascript:void(0)" (click)="viewUser(user.id)" class="text-primary">
-                      {{ user.userName }}
-                    </a>
-                  </td>
-                  <td>{{ user.fullName }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>
-                    <ng-container *ngFor="let role of user.roles">
-                      <c-badge [color]="getRoleBadgeColor(role)" class="me-1" [title]="role">
-                        {{ getRoleDisplayName(role) }}
+            <!-- Table View -->
+            <ng-container *ngIf="!isLoading && users.length > 0 && viewMode === 'table'">
+              <table cTable striped>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Email</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let user of users">
+                    <td>{{ user.id | slice:0:8 }}...</td>
+                    <td>
+                      <a href="javascript:void(0)" (click)="viewUser(user.id)" class="text-primary">
+                        {{ user.userName }}
+                      </a>
+                    </td>
+                    <td>{{ user.fullName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                      <ng-container *ngFor="let role of user.roles">
+                        <c-badge [color]="getRoleBadgeColor(role)" class="me-1" [title]="role">
+                          {{ getRoleDisplayName(role) }}
+                        </c-badge>
+                      </ng-container>
+                      <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted">
+                        No roles
+                      </span>
+                    </td>
+                    <td>
+                      <c-badge [color]="getStatusBadgeColor(user.isDeleted)">
+                        {{ getStatusText(user.isDeleted) }}
                       </c-badge>
-                    </ng-container>
-                    <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted">
-                      No roles
-                    </span>
-                  </td>
-                  <td>
-                    <c-badge [color]="getStatusBadgeColor(user.isDeleted)">
-                      {{ getStatusText(user.isDeleted) }}
-                    </c-badge>
-                  </td>
-                  <td>
-                    <c-badge [color]="getEmailConfirmedBadge(user.emailConfirmed)">
-                      {{ getEmailConfirmedText(user.emailConfirmed) }}
-                    </c-badge>
-                  </td>
-                  <td class="text-center">
-                    <!-- View -->
-                    <button
-                      cButton
-                      color="info"
-                      size="sm"
-                      class="me-1"
-                      (click)="viewUser(user.id)"
-                      cTooltip="View"
-                    >
-                      <svg cIcon name="cil-magnifying-glass"></svg>
-                    </button>
+                    </td>
+                    <td>
+                      <c-badge [color]="getEmailConfirmedBadge(user.emailConfirmed)">
+                        {{ getEmailConfirmedText(user.emailConfirmed) }}
+                      </c-badge>
+                    </td>
+                    <td class="text-center">
+                      <!-- View -->
+                      <button
+                        cButton
+                        color="info"
+                        size="sm"
+                        class="me-1"
+                        (click)="viewUser(user.id)"
+                        cTooltip="View"
+                      >
+                        <svg cIcon name="cil-magnifying-glass"></svg>
+                      </button>
 
-                    <!-- Edit -->
-                    <button
-                      cButton
-                      color="warning"
-                      size="sm"
-                      class="me-1"
-                      (click)="editUser(user.id)"
-                      *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)"
-                      cTooltip="Edit"
-                    >
-                      <svg cIcon name="cil-pencil"></svg>
-                    </button>
+                      <!-- Edit -->
+                      <button
+                        cButton
+                        color="warning"
+                        size="sm"
+                        class="me-1"
+                        (click)="editUser(user.id)"
+                        *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)"
+                        cTooltip="Edit"
+                      >
+                        <svg cIcon name="cil-pencil"></svg>
+                      </button>
 
-                    <!-- Manage Roles -->
-                    <button
-                      cButton
-                      color="secondary"
-                      size="sm"
-                      class="me-1"
-                      (click)="openRoleModal(user)"
-                      *ngIf="canManage && !user.isDeleted"
-                      cTooltip="Manage Roles"
-                    >
-                      <svg cIcon name="cil-shield-alt"></svg>
-                    </button>
+                      <!-- Manage Roles -->
+                      <button
+                        cButton
+                        color="secondary"
+                        size="sm"
+                        class="me-1"
+                        (click)="openRoleModal(user)"
+                        *ngIf="canManage && !user.isDeleted"
+                        cTooltip="Manage Roles"
+                      >
+                        <svg cIcon name="cil-shield-alt"></svg>
+                      </button>
 
-                    <!-- Restore -->
-                    <button
-                      cButton
-                      color="success"
-                      size="sm"
-                      class="me-1"
-                      (click)="restoreUser(user.id)"
-                      *ngIf="user.isDeleted && canDelete"
-                      cTooltip="Restore"
-                    >
-                      <svg cIcon name="cil-arrow-circle-left"></svg>
-                    </button>
+                      <!-- Restore -->
+                      <button
+                        cButton
+                        color="success"
+                        size="sm"
+                        class="me-1"
+                        (click)="restoreUser(user.id)"
+                        *ngIf="user.isDeleted && canDelete"
+                        cTooltip="Restore"
+                      >
+                        <svg cIcon name="cil-arrow-circle-left"></svg>
+                      </button>
 
-                    <!-- Delete -->
-                    <button
-                      cButton
-                      color="danger"
-                      size="sm"
-                      (click)="deleteUser(user.id)"
-                      *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)"
-                      cTooltip="Delete"
-                    >
-                      <svg cIcon name="cil-trash"></svg>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      <!-- Delete -->
+                      <button
+                        cButton
+                        color="danger"
+                        size="sm"
+                        (click)="deleteUser(user.id)"
+                        *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)"
+                        cTooltip="Delete"
+                      >
+                        <svg cIcon name="cil-trash"></svg>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </ng-container>
+
+            <!-- Card View -->
+            <div *ngIf="!isLoading && users.length > 0 && viewMode === 'card'" class="row">
+              <div class="col-lg-4 col-md-6 mb-4" *ngFor="let user of users">
+                <c-card class="h-100 shadow-sm">
+                  <c-card-body class="d-flex flex-column">
+
+                    <!-- Avatar + Header (constrained to prevent overflow) -->
+                    <div class="d-flex align-items-start mb-3" style="min-width: 0; overflow: hidden;">
+                      <div class="me-3" style="flex-shrink: 0;">
+                        <app-image-preview
+                          *ngIf="user.imgPath"
+                          [src]="user.imgPath"
+                          size="xl"
+                          shape="circle"
+                        ></app-image-preview>
+                        <app-image-preview
+                          *ngIf="!user.imgPath"
+                          fallbackIcon="cil-user"
+                          size="xl"
+                          shape="circle"
+                        ></app-image-preview>
+                      </div>
+                      <div class="flex-grow-1" style="min-width: 0;">
+                        <h5 class="card-title mb-1 text-truncate" [title]="user.fullName || user.userName">
+                          {{ user.fullName || user.userName }}
+                        </h5>
+                        <p class="text-body-secondary small mb-1 text-truncate" [title]="user.userName">
+                          <svg cIcon name="cil-user" class="me-1"></svg>
+                          {{ user.userName }}
+                        </p>
+                        <p class="text-body-secondary small mb-0 text-truncate" [title]="user.email">
+                          <svg cIcon name="cil-envelope-closed" class="me-1"></svg>
+                          {{ user.email }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Badges Row -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                      <c-badge [color]="getStatusBadgeColor(user.isDeleted)">
+                        {{ getStatusText(user.isDeleted) }}
+                      </c-badge>
+                      <c-badge [color]="getEmailConfirmedBadge(user.emailConfirmed)">
+                        {{ getEmailConfirmedText(user.emailConfirmed) }}
+                      </c-badge>
+                    </div>
+
+                    <!-- Roles -->
+                    <div class="mb-3">
+                      <div class="text-body-secondary small mb-1">Roles</div>
+                      <div class="d-flex flex-wrap gap-1">
+                        <ng-container *ngFor="let role of user.roles">
+                          <c-badge [color]="getRoleBadgeColor(role)" [title]="role">
+                            {{ getRoleDisplayName(role) }}
+                          </c-badge>
+                        </ng-container>
+                        <span *ngIf="!user.roles || user.roles.length === 0" class="text-muted small">
+                          No roles assigned
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-auto d-flex justify-content-end gap-2 pt-3 border-top">
+                      <button cButton color="info" size="sm" (click)="viewUser(user.id)" cTooltip="View">
+                        <svg cIcon name="cil-magnifying-glass"></svg>
+                      </button>
+                      <button cButton color="warning" size="sm" (click)="editUser(user.id)" *ngIf="canManage && !user.isDeleted && !isCurrentUser(user.id)" cTooltip="Edit">
+                        <svg cIcon name="cil-pencil"></svg>
+                      </button>
+                      <button cButton color="secondary" size="sm" (click)="openRoleModal(user)" *ngIf="canManage && !user.isDeleted" cTooltip="Manage Roles">
+                        <svg cIcon name="cil-shield-alt"></svg>
+                      </button>
+                      <button cButton color="success" size="sm" (click)="restoreUser(user.id)" *ngIf="user.isDeleted && canDelete" cTooltip="Restore">
+                        <svg cIcon name="cil-arrow-circle-left"></svg>
+                      </button>
+                      <button cButton color="danger" size="sm" (click)="deleteUser(user.id)" *ngIf="!user.isDeleted && canDelete && !isCurrentUser(user.id)" cTooltip="Delete">
+                        <svg cIcon name="cil-trash"></svg>
+                      </button>
+                    </div>
+                  </c-card-body>
+                </c-card>
+              </div>
+            </div>
 
             <!-- Pagination -->
             <div *ngIf="!isLoading && pagination && totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
