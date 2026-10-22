@@ -20,6 +20,7 @@ import {
 import { IconDirective } from '@coreui/icons-angular';
 import { OrganizationService } from '../../../services/organization.service';
 import { AuthService } from '../../../services/auth.service';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-organization-form',
@@ -40,7 +41,8 @@ import { AuthService } from '../../../services/auth.service';
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,
-    FormLabelDirective
+    FormLabelDirective,
+    ImagePreviewComponent
   ]
 })
 export class OrganizationFormComponent implements OnInit, OnDestroy {
@@ -64,7 +66,11 @@ export class OrganizationFormComponent implements OnInit, OnDestroy {
   ) {
     this.organizationForm = this.fb.group({
       name: ['', [Validators.required, Validators.maxLength(200)]],
-      address: ['', [Validators.maxLength(500)]]
+      address: ['', [Validators.maxLength(500)]],
+      imgPath: ['', [
+        Validators.maxLength(500),
+        Validators.pattern(/^https?:\/\/.+/)
+      ]]
     });
   }
 
@@ -100,7 +106,8 @@ export class OrganizationFormComponent implements OnInit, OnDestroy {
         if (response.success && response.data) {
           this.organizationForm.patchValue({
             name: response.data.name,
-            address: response.data.address || ''
+            address: response.data.address || '',
+            imgPath: response.data.imgPath || ''
           });
         } else {
           this.errorMessage = response.message || 'Failed to load organization.';
@@ -186,6 +193,7 @@ export class OrganizationFormComponent implements OnInit, OnDestroy {
 
   get name() { return this.organizationForm.get('name'); }
   get address() { return this.organizationForm.get('address'); }
+  get imgPath() { return this.organizationForm.get('imgPath'); }
 
   get canManage(): boolean {
     return this.authService.isSuperAdmin();

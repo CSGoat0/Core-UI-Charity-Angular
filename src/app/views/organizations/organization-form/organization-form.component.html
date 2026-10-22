@@ -87,6 +87,33 @@
                 </div>
               </div>
 
+              <!-- Image URL -->
+              <div class="mb-3">
+                <label cLabel for="imgPath">Organization Logo URL</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-image"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="imgPath"
+                    formControlName="imgPath"
+                    placeholder="https://example.com/logo.png"
+                    [ngClass]="{
+                      'is-invalid': imgPath?.invalid && imgPath?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="imgPath?.invalid && imgPath?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="imgPath?.errors?.['maxlength']">Image URL cannot exceed 500 characters</span>
+                  <span *ngIf="imgPath?.errors?.['pattern']">Image URL must start with http:// or https://</span>
+                </div>
+                <div class="mt-2">
+                  <app-image-preview [src]="imgPath?.value" size="md" fallbackIcon="cil-building"></app-image-preview>
+                </div>
+              </div>
+
               <div class="d-flex gap-2 mt-3">
                 <button
                   cButton
