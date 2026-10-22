@@ -1,4 +1,4 @@
-<div [ngClass]="['image-preview', 'image-preview--' + size, showTextFallback ? 'image-preview--with-text' : '']">
+<div [ngClass]="containerClasses">
   <img
     *ngIf="showImage"
     [src]="src!"

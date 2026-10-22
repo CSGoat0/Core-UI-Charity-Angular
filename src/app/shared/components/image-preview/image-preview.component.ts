@@ -16,6 +16,9 @@ export class ImagePreviewComponent implements OnChanges {
   @Input() alt: string = 'Preview';
   @Input() status: 'none' | 'success' | 'danger' | 'warning' | 'info' = 'none';
 
+  // New Input for shape
+  @Input() shape: 'square' | 'circle' = 'square';
+
   imageFailed = false;
 
   constructor(private cdr: ChangeDetectorRef) {}
@@ -41,5 +44,15 @@ export class ImagePreviewComponent implements OnChanges {
 
   get hasStatus(): boolean {
     return this.status !== 'none';
+  }
+
+  // Helper to generate classes array
+  get containerClasses(): string[] {
+    return [
+      'image-preview',
+      'image-preview--' + this.size,
+      'image-preview--' + this.shape,
+      this.showTextFallback ? 'image-preview--with-text' : ''
+    ].filter(c => !!c);
   }
 }
