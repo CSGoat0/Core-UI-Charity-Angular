@@ -4,12 +4,36 @@
       <c-col lg="12">
         <c-card>
           <c-card-header>
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
               <h5 class="mb-0">
                 <svg cIcon name="cil-bullhorn" class="me-2"></svg>
                 Campaigns
               </h5>
-              <div>
+              <div class="d-flex gap-2">
+                <!-- View Toggle -->
+                <c-button-group role="group" aria-label="View mode toggle">
+                  <button
+                    cButton
+                    color="secondary"
+                    variant="outline"
+                    [active]="viewMode === 'table'"
+                    (click)="setViewMode('table')"
+                    cTooltip="Table View"
+                  >
+                    <svg cIcon name="cil-list"></svg>
+                  </button>
+                  <button
+                    cButton
+                    color="secondary"
+                    variant="outline"
+                    [active]="viewMode === 'card'"
+                    (click)="setViewMode('card')"
+                    cTooltip="Card View"
+                  >
+                    <svg cIcon name="cil-grid"></svg>
+                  </button>
+                </c-button-group>
+
                 <button
                   cButton
                   color="primary"
@@ -108,7 +132,7 @@
               </div>
             </div>
 
-            <!-- Table -->
+            <!-- Empty State -->
             <div *ngIf="!isLoading && campaigns.length === 0" class="text-center py-4">
               <p class="text-body-secondary">No campaigns found.</p>
               <button
@@ -122,113 +146,249 @@
               </button>
             </div>
 
-            <table cTable striped *ngIf="!isLoading && campaigns.length > 0">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Target</th>
-                  <th>Achieved</th>
-                  <th>Days Left</th>
-                  <th class="text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let campaign of campaigns">
-                  <td>{{ campaign.id }}</td>
-                  <td>
-                    <a href="javascript:void(0)" (click)="viewCampaign(campaign.id)" class="text-primary">
-                      {{ campaign.title }}
-                    </a>
-                  </td>
-                  <td>
-                    <c-badge [color]="campaign.type === 'Solo' ? 'primary' : 'success'">
-                      {{ campaign.type }}
-                    </c-badge>
-                  </td>
-                  <td>
-                    <c-badge [color]="getStatusBadgeColor(campaign.status)">
-                      {{ getStatusText(campaign.status) }}
-                    </c-badge>
-                    <c-badge
-                      *ngIf="!campaign.canReceiveDonations"
-                      color="warning"
-                      class="ms-2"
-                      cTooltip="This campaign's organization has no valid payment info configured"
+            <!-- Table View -->
+            <ng-container *ngIf="!isLoading && campaigns.length > 0 && viewMode === 'table'">
+              <table cTable striped>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Target</th>
+                    <th>Achieved</th>
+                    <th>Days Left</th>
+                    <th class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let campaign of campaigns">
+                    <td>{{ campaign.id }}</td>
+                    <td>
+                      <a href="javascript:void(0)" (click)="viewCampaign(campaign.id)" class="text-primary">
+                        {{ campaign.title }}
+                      </a>
+                    </td>
+                    <td>
+                      <c-badge [color]="campaign.type === 'Solo' ? 'primary' : 'success'">
+                        {{ campaign.type }}
+                      </c-badge>
+                    </td>
+                    <td>
+                      <c-badge [color]="getStatusBadgeColor(campaign.status)">
+                        {{ getStatusText(campaign.status) }}
+                      </c-badge>
+                      <c-badge
+                        *ngIf="!campaign.canReceiveDonations"
+                        color="warning"
+                        class="ms-2"
+                        cTooltip="This campaign's organization has no valid payment info configured"
+                      >
+                        Donations disabled
+                      </c-badge>
+                    </td>
+                    <td>{{ campaign.target | currency }}</td>
+                    <td>{{ campaign.achieved | currency }}</td>
+                    <td>
+                      <span *ngIf="campaign.daysRemaining > 0; else expired">
+                        {{ campaign.daysRemaining }} days
+                      </span>
+                      <ng-template #expired>
+                        <span class="text-danger">Expired</span>
+                      </ng-template>
+                    </td>
+                    <td class="text-center">
+                      <button
+                        cButton
+                        color="info"
+                        size="sm"
+                        class="me-1"
+                        (click)="viewCampaign(campaign.id)"
+                        cTooltip="View"
+                      >
+                        <svg cIcon name="cil-magnifying-glass"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="warning"
+                        size="sm"
+                        class="me-1"
+                        (click)="editCampaign(campaign.id)"
+                        *ngIf="canManage && !campaign.isDeleted"
+                        cTooltip="Edit"
+                      >
+                        <svg cIcon name="cil-pencil"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="info"
+                        size="sm"
+                        class="me-1"
+                        (click)="manageInvites(campaign.id)"
+                        *ngIf="campaign.type === 'Shared' && !campaign.isDeleted && canManage"
+                        cTooltip="Manage Invites"
+                      >
+                        <svg cIcon name="cil-people"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="success"
+                        size="sm"
+                        class="me-1"
+                        (click)="restoreCampaign(campaign.id)"
+                        *ngIf="campaign.isDeleted && canDelete"
+                        cTooltip="Restore"
+                      >
+                        <svg cIcon name="cil-arrow-circle-left"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="danger"
+                        size="sm"
+                        (click)="deleteCampaign(campaign.id)"
+                        *ngIf="!campaign.isDeleted && canDelete"
+                        cTooltip="Delete"
+                      >
+                        <svg cIcon name="cil-trash"></svg>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </ng-container>
+
+            <!-- Card View -->
+            <div *ngIf="!isLoading && campaigns.length > 0 && viewMode === 'card'" class="row">
+              <div class="col-lg-4 col-md-6 mb-4" *ngFor="let campaign of campaigns">
+                <c-card class="h-100 shadow-sm">
+                  <div class="position-relative">
+                    <!-- Image with fallback placeholder -->
+                    <div
+                      class="d-flex align-items-center justify-content-center bg-body-secondary"
+                      style="height: 160px; overflow: hidden; border-top-left-radius: var(--cui-card-border-radius); border-top-right-radius: var(--cui-card-border-radius);"
                     >
-                      Donations disabled
-                    </c-badge>
-                  </td>
-                  <td>{{ campaign.target | currency }}</td>
-                  <td>{{ campaign.achieved | currency }}</td>
-                  <td>
-                    <span *ngIf="campaign.daysRemaining > 0; else expired">
-                      {{ campaign.daysRemaining }} days
-                    </span>
-                    <ng-template #expired>
-                      <span class="text-danger">Expired</span>
-                    </ng-template>
-                  </td>
-                  <td class="text-center">
-                    <button
-                      cButton
-                      color="info"
-                      size="sm"
-                      class="me-1"
-                      (click)="viewCampaign(campaign.id)"
-                      cTooltip="View"
-                    >
-                      <svg cIcon name="cil-magnifying-glass"></svg>
-                    </button>
-                    <button
-                      cButton
-                      color="warning"
-                      size="sm"
-                      class="me-1"
-                      (click)="editCampaign(campaign.id)"
-                      *ngIf="canManage && !campaign.isDeleted"
-                      cTooltip="Edit"
-                    >
-                      <svg cIcon name="cil-pencil"></svg>
-                    </button>
-                    <button
-                      cButton
-                      color="info"
-                      size="sm"
-                      class="me-1"
-                      (click)="manageInvites(campaign.id)"
-                      *ngIf="campaign.type === 'Shared' && !campaign.isDeleted && canManage"
-                      cTooltip="Manage Invites"
-                    >
-                      <svg cIcon name="cil-people"></svg>
-                    </button>
-                    <button
-                      cButton
-                      color="success"
-                      size="sm"
-                      class="me-1"
-                      (click)="restoreCampaign(campaign.id)"
-                      *ngIf="campaign.isDeleted && canDelete"
-                      cTooltip="Restore"
-                    >
-                      <svg cIcon name="cil-arrow-circle-left"></svg>
-                    </button>
-                    <button
-                      cButton
-                      color="danger"
-                      size="sm"
-                      (click)="deleteCampaign(campaign.id)"
-                      *ngIf="!campaign.isDeleted && canDelete"
-                      cTooltip="Delete"
-                    >
-                      <svg cIcon name="cil-trash"></svg>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      <app-image-preview
+                        *ngIf="campaign.imgPath"
+                        [src]="campaign.imgPath"
+                        size="lg"
+                      ></app-image-preview>
+                      <svg
+                        *ngIf="!campaign.imgPath"
+                        cIcon
+                        name="cil-bullhorn"
+                        size="4xl"
+                        class="text-body-tertiary"
+                      ></svg>
+                    </div>
+                    <!-- Type Badge Overlay (top-left) -->
+                    <div class="position-absolute top-0 start-0 m-3">
+                      <c-badge [color]="campaign.type === 'Solo' ? 'primary' : 'success'">
+                        {{ campaign.type }}
+                      </c-badge>
+                    </div>
+                    <!-- Status Badge Overlay (top-right) -->
+                    <div class="position-absolute top-0 end-0 m-3">
+                      <c-badge [color]="getStatusBadgeColor(campaign.status)">
+                        {{ getStatusText(campaign.status) }}
+                      </c-badge>
+                    </div>
+                  </div>
+                  <c-card-body class="d-flex flex-column">
+                    <h5 class="card-title mb-2">{{ campaign.title }}</h5>
+
+                    <!-- Donations Disabled Badge -->
+                    <div class="mb-2" *ngIf="!campaign.canReceiveDonations">
+                      <c-badge
+                        color="warning"
+                        cTooltip="This campaign's organization has no valid payment info configured"
+                      >
+                        Donations disabled
+                      </c-badge>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="mb-3">
+                      <div class="d-flex justify-content-between small text-body-secondary mb-1">
+                        <span>{{ campaign.achieved | currency }}</span>
+                        <span>{{ campaign.target | currency }}</span>
+                      </div>
+                      <div class="progress" style="height: 8px;">
+                        <div
+                          class="progress-bar bg-success"
+                          role="progressbar"
+                          [style.width.%]="getProgressPercentage(campaign)"
+                          [attr.aria-valuenow]="getProgressPercentage(campaign)"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                      </div>
+                      <div class="small text-body-secondary mt-1">
+                        {{ getProgressPercentage(campaign).toFixed(1) }}% achieved
+                        <span *ngIf="campaign.daysRemaining > 0" class="ms-2">
+                          &middot; {{ campaign.daysRemaining }} days left
+                        </span>
+                        <span *ngIf="campaign.daysRemaining <= 0" class="ms-2 text-danger">
+                          &middot; Expired
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-auto d-flex justify-content-end gap-2 pt-3 border-top">
+                      <button
+                        cButton
+                        color="info"
+                        size="sm"
+                        (click)="viewCampaign(campaign.id)"
+                        cTooltip="View"
+                      >
+                        <svg cIcon name="cil-magnifying-glass"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="warning"
+                        size="sm"
+                        (click)="editCampaign(campaign.id)"
+                        *ngIf="canManage && !campaign.isDeleted"
+                        cTooltip="Edit"
+                      >
+                        <svg cIcon name="cil-pencil"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="info"
+                        size="sm"
+                        (click)="manageInvites(campaign.id)"
+                        *ngIf="campaign.type === 'Shared' && !campaign.isDeleted && canManage"
+                        cTooltip="Manage Invites"
+                      >
+                        <svg cIcon name="cil-people"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="success"
+                        size="sm"
+                        (click)="restoreCampaign(campaign.id)"
+                        *ngIf="campaign.isDeleted && canDelete"
+                        cTooltip="Restore"
+                      >
+                        <svg cIcon name="cil-arrow-circle-left"></svg>
+                      </button>
+                      <button
+                        cButton
+                        color="danger"
+                        size="sm"
+                        (click)="deleteCampaign(campaign.id)"
+                        *ngIf="!campaign.isDeleted && canDelete"
+                        cTooltip="Delete"
+                      >
+                        <svg cIcon name="cil-trash"></svg>
+                      </button>
+                    </div>
+                  </c-card-body>
+                </c-card>
+              </div>
+            </div>
 
             <!-- Pagination -->
             <div *ngIf="!isLoading && pagination && totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">

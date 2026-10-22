@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 import {
   ButtonDirective,
   CardBodyComponent,
@@ -43,6 +44,7 @@ import { DonateModalComponent } from '../../donations/donate-modal/donate-modal.
     NavItemComponent,
     NavLinkDirective,
     TooltipDirective,
+    ImagePreviewComponent,
     DonateModalComponent
   ]
 })

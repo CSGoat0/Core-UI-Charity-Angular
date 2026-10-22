@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   ButtonDirective,
+  ButtonGroupComponent,
   CardBodyComponent,
   CardComponent,
   CardHeaderComponent,
@@ -29,6 +30,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { CampaignService } from '../../../services/campaign.service';
 import { AuthService } from '../../../services/auth.service';
 import { CampaignResponse, CampaignStatus, PaginatedResponse, PaginationParameters } from '../../../models/campaign.models';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-campaign-list',
@@ -44,6 +46,7 @@ import { CampaignResponse, CampaignStatus, PaginatedResponse, PaginationParamete
     CardBodyComponent,
     TableDirective,
     ButtonDirective,
+    ButtonGroupComponent,
     RouterLink,
     IconDirective,
     PaginationComponent,
@@ -58,7 +61,8 @@ import { CampaignResponse, CampaignStatus, PaginatedResponse, PaginationParamete
     DropdownComponent,
     DropdownToggleDirective,
     DropdownMenuDirective,
-    DropdownItemDirective
+    DropdownItemDirective,
+    ImagePreviewComponent
   ]
 })
 export class CampaignListComponent implements OnInit, OnDestroy {
@@ -78,6 +82,10 @@ export class CampaignListComponent implements OnInit, OnDestroy {
   includeDeleted = false;
   filterStatus: string = '';
   filterType: string = '';
+
+  // View Mode State (defaults to card)
+  viewMode: 'table' | 'card' = 'card';
+  private readonly VIEW_MODE_KEY = 'campaigns-view-mode';
 
   // Status and Type options
   statusOptions = [
@@ -106,6 +114,7 @@ export class CampaignListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadViewMode();
     this.loadCampaigns();
   }
 
@@ -114,6 +123,22 @@ export class CampaignListComponent implements OnInit, OnDestroy {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+  }
+
+  private loadViewMode(): void {
+    const savedMode = localStorage.getItem(this.VIEW_MODE_KEY);
+    if (savedMode === 'table' || savedMode === 'card') {
+      this.viewMode = savedMode;
+    } else {
+      this.viewMode = 'card';
+      localStorage.setItem(this.VIEW_MODE_KEY, this.viewMode);
+    }
+  }
+
+  setViewMode(mode: 'table' | 'card'): void {
+    this.viewMode = mode;
+    localStorage.setItem(this.VIEW_MODE_KEY, mode);
+    this.cdr.detectChanges();
   }
 
   loadCampaigns(): void {
@@ -311,6 +336,13 @@ export class CampaignListComponent implements OnInit, OnDestroy {
   getSelectedTypeLabel(): string {
     const option = this.typeOptions.find(o => o.value === this.filterType);
     return option ? option.label : 'All Types';
+  }
+
+  getProgressPercentage(campaign: CampaignResponse): number {
+    if (!campaign || !campaign.target || campaign.target === 0) {
+      return 0;
+    }
+    return Math.min((campaign.achieved / campaign.target) * 100, 100);
   }
 
   get canManage(): boolean {
