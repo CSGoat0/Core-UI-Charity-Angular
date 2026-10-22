@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   ButtonDirective,
+  ButtonGroupComponent,
   CardBodyComponent,
   CardComponent,
   CardHeaderComponent,
@@ -25,6 +26,7 @@ import { IconDirective } from '@coreui/icons-angular';
 import { OrganizationService } from '../../../services/organization.service';
 import { Organization, PaginatedResponse, PaginationParameters } from '../../../models/organization.models';
 import { AuthService } from '../../../services/auth.service';
+import { ImagePreviewComponent } from '../../../shared/components/image-preview/image-preview.component';
 
 @Component({
   selector: 'app-organization-list',
@@ -40,6 +42,7 @@ import { AuthService } from '../../../services/auth.service';
     CardBodyComponent,
     TableDirective,
     ButtonDirective,
+    ButtonGroupComponent,
     RouterLink,
     IconDirective,
     PaginationComponent,
@@ -50,7 +53,8 @@ import { AuthService } from '../../../services/auth.service';
     FormControlDirective,
     InputGroupComponent,
     InputGroupTextDirective,
-    TooltipDirective
+    TooltipDirective,
+    ImagePreviewComponent
   ]
 })
 export class OrganizationListComponent implements OnInit, OnDestroy {
@@ -68,6 +72,10 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
   searchTerm: string = '';
   includeDeleted = false;
 
+  // View Mode State (defaults to card as requested)
+  viewMode: 'table' | 'card' = 'card';
+  private readonly VIEW_MODE_KEY = 'organizations-view-mode';
+
   private timeoutId: any = null;
 
   constructor(
@@ -78,6 +86,7 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadViewMode();
     this.loadOrganizations();
   }
 
@@ -86,6 +95,23 @@ export class OrganizationListComponent implements OnInit, OnDestroy {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+  }
+
+  private loadViewMode(): void {
+    const savedMode = localStorage.getItem(this.VIEW_MODE_KEY);
+    if (savedMode === 'table' || savedMode === 'card') {
+      this.viewMode = savedMode;
+    } else {
+      // Default to card view if no preference is saved
+      this.viewMode = 'card';
+      localStorage.setItem(this.VIEW_MODE_KEY, this.viewMode);
+    }
+  }
+
+  setViewMode(mode: 'table' | 'card'): void {
+    this.viewMode = mode;
+    localStorage.setItem(this.VIEW_MODE_KEY, mode);
+    this.cdr.detectChanges();
   }
 
   loadOrganizations(): void {
