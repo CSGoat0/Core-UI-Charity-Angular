@@ -89,6 +89,33 @@
                 </div>
               </div>
 
+              <!-- Image URL -->
+              <div class="mb-3">
+                <label cLabel for="imgPath">Campaign Image URL</label>
+                <c-input-group>
+                  <span cInputGroupText>
+                    <svg cIcon name="cil-image"></svg>
+                  </span>
+                  <input
+                    type="text"
+                    cFormControl
+                    id="imgPath"
+                    formControlName="imgPath"
+                    placeholder="https://example.com/campaign.jpg"
+                    [ngClass]="{
+                      'is-invalid': imgPath?.invalid && imgPath?.touched
+                    }"
+                  />
+                </c-input-group>
+                <div *ngIf="imgPath?.invalid && imgPath?.touched" class="invalid-feedback d-block">
+                  <span *ngIf="imgPath?.errors?.['maxlength']">Image URL cannot exceed 500 characters</span>
+                  <span *ngIf="imgPath?.errors?.['pattern']">Image URL must start with http:// or https://</span>
+                </div>
+                <div class="mt-2">
+                  <app-image-preview [src]="imgPath?.value" size="md" fallbackIcon="cil-bullhorn"></app-image-preview>
+                </div>
+              </div>
+
               <!-- Target -->
               <div class="mb-3">
                 <label cLabel for="target">Target Amount <span class="text-danger">*</span></label>
@@ -110,6 +137,7 @@
                 <div *ngIf="target?.invalid && target?.touched" class="invalid-feedback d-block">
                   <span *ngIf="target?.errors?.['required']">Target amount is required</span>
                   <span *ngIf="target?.errors?.['min']">Target must be at least 1</span>
+                  <span *ngIf="target?.errors?.['max']">Target cannot exceed 1,000,000,000</span>
                 </div>
               </div>
 
