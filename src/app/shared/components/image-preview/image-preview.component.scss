@@ -57,8 +57,17 @@
   }
 
   &__icon {
-    width: 50%;
-    height: 50%;
+    /* Force the icon to scale up nicely inside the container */
+    width: 60% !important;
+    height: 60% !important;
+    max-width: 64px;
+    max-height: 64px;
+
+    /* Ensure the SVG paths actually fill the bounding box */
+    svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   &__status {
