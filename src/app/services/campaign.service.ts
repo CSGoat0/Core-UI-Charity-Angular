@@ -256,6 +256,26 @@ export class CampaignService {
   // Filtering & Searching
   // ==============================
 
+  getFilteredCampaigns(
+    params: PaginationParameters,
+    filters: { searchTerm?: string; status?: string; type?: string; includeDeleted?: boolean }
+  ): Observable<ServiceResponse<PaginatedResponse<CampaignResponse>>> {
+
+    let httpParams = new HttpParams()
+      .set('pageNumber', params.pageNumber.toString())
+      .set('pageSize', params.pageSize.toString())
+      .set('includeDeleted', (filters.includeDeleted ?? false).toString());
+
+    if (filters.searchTerm) httpParams = httpParams.set('searchTerm', filters.searchTerm);
+    if (filters.status) httpParams = httpParams.set('status', filters.status);
+    if (filters.type) httpParams = httpParams.set('type', filters.type);
+
+    return this.http.get<ServiceResponse<PaginatedResponse<CampaignResponse>>>(
+      `${this.apiUrl}/filter`,
+      { params: httpParams }
+    );
+  }
+
   searchCampaigns(params: PaginationParameters, term: string): Observable<ServiceResponse<PaginatedResponse<CampaignResponse>>> {
     let httpParams = this.buildPaginationParams(params);
     httpParams = httpParams.set('term', term);

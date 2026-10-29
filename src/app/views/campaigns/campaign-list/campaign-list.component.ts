@@ -148,32 +148,18 @@ export class CampaignListComponent implements OnInit, OnDestroy {
 
     const params: PaginationParameters = {
       pageNumber: this.currentPage,
-      pageSize: this.pageSize,
-      searchTerm: this.searchTerm || undefined
+      pageSize: this.pageSize
     };
 
-    // Use different endpoints based on filters
-    if (this.filterStatus) {
-      this.campaignService.getCampaignsByStatus(params, parseInt(this.filterStatus, 10) as CampaignStatus).subscribe({
-        next: (response) => this.handleResponse(response),
-        error: (error) => this.handleError(error)
-      });
-    } else if (this.filterType) {
-      this.campaignService.getCampaignsByType(params, this.filterType).subscribe({
-        next: (response) => this.handleResponse(response),
-        error: (error) => this.handleError(error)
-      });
-    } else if (this.searchTerm && this.searchTerm.trim().length > 0) {
-      this.campaignService.searchCampaigns(params, this.searchTerm.trim()).subscribe({
-        next: (response) => this.handleResponse(response),
-        error: (error) => this.handleError(error)
-      });
-    } else {
-      this.campaignService.getAllCampaigns(params, this.includeDeleted).subscribe({
-        next: (response) => this.handleResponse(response),
-        error: (error) => this.handleError(error)
-      });
-    }
+    this.campaignService.getFilteredCampaigns(params, {
+      searchTerm: this.searchTerm || undefined,
+      status: this.filterStatus || undefined,
+      type: this.filterType || undefined,
+      includeDeleted: this.includeDeleted
+    }).subscribe({
+      next: (response) => this.handleResponse(response),
+      error: (error) => this.handleError(error)
+    });
   }
 
   private handleResponse(response: any): void {
